@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Ticket, PrioridadTicket, EstadoTicket } from './ticket.entity';
-import { Interaccion, TipoAutor } from '../entities/interaccion.entity';
-import { Cliente } from '../entities/cliente.entity';
+import { TicketEntity } from '../tickets/entities/ticket.entity';
+import { InteraccionEntity } from '../interacciones/entities/interaccion.entity';
+import { ClienteEntity } from '../clientes/entities/cliente.entity';
 
 export interface CreateTicketDto {
   cliente_id?: number;
@@ -17,12 +17,12 @@ export interface CreateTicketDto {
 @Injectable()
 export class TicketService {
   constructor(
-    @InjectRepository(Ticket)
-    private ticketRepository: Repository<Ticket>,
-    @InjectRepository(Interaccion)
-    private interaccionRepository: Repository<Interaccion>,
-    @InjectRepository(Cliente)
-    private clienteRepository: Repository<Cliente>,
+    @InjectRepository(TicketEntity)
+    private ticketRepository: Repository<TicketEntity>,
+    @InjectRepository(InteraccionEntity)
+    private interaccionRepository: Repository<InteraccionEntity>,
+    @InjectRepository(ClienteEntity)
+    private clienteRepository: Repository<ClienteEntity>,
   ) {}
 
   // Calcular fecha de vencimiento SLA según prioridad
@@ -53,7 +53,7 @@ export class TicketService {
 
     if (!clienteId) {
       // Crear cliente anónimo
-      const clienteAnonimo = new Cliente();
+      const clienteAnonimo = new ClienteEntity();
       clienteAnonimo.nombre_completo = `Cliente Anónimo ${Date.now()}`;
       clienteAnonimo.email = `anonimo-${Date.now()}@anonymous.crm`;
 
@@ -62,22 +62,22 @@ export class TicketService {
     }
 
     // 1. Crear el ticket
-    const ticket = new Ticket();
+    const ticket = new TicketEntity();
     ticket.cliente_id = clienteId;
     ticket.asunto = dto.titulo;
     ticket.canal = dto.canal as any;
-    ticket.prioridad = dto.prioridad as PrioridadTicket;
-    ticket.estado = EstadoTicket.Abierto;
-    ticket.agente_id = 1; // Por ahora, asignación manual
+    ticket.prioridad = dto.prioridad as any;
+    ticket.estado = 'abierto' as any;
+    // ticket.agente_id = null; // Sin asignación manual por ahora
     ticket.fecha_vencimiento_sla = this.calcularFechaVencimientoSLA(dto.prioridad);
 
     const ticketGuardado = await this.ticketRepository.save(ticket);
 
     // 2. Crear la primera interacción (descripción)
-    const interaccion = new Interaccion();
+    const interaccion = new InteraccionEntity();
     interaccion.ticket_id = ticketGuardado.id;
-    interaccion.autor_tipo = TipoAutor.Cliente;
-    interaccion.autor_id = clienteId;
+    interaccion.autor_tipo = 'cliente' as any;
+    interaccion.autor_id = null as any; // Asignación de cliente no disponible
     interaccion.contenido = dto.descripcion;
     interaccion.es_nota_interna = false;
 
@@ -97,14 +97,14 @@ export class TicketService {
     };
   }
 
-  async obtenerTicket(id: number): Promise<Ticket | null> {
+  async obtenerTicket(id: string): Promise<TicketEntity | null> {
     return this.ticketRepository.findOne({
       where: { id },
       relations: ['cliente', 'interacciones'],
     });
   }
 
-  async listarTickets(): Promise<Ticket[]> {
+  async listarTickets(): Promise<TicketEntity[]> {
     return this.ticketRepository.find({
       relations: ['cliente', 'interacciones'],
     });
