@@ -1,6 +1,14 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { ClientesModule } from './clientes/clientes.module';
+import { TicketsModule } from './tickets/tickets.module';
+import { InteraccionesModule } from './interacciones/interacciones.module';
+import { ArticulosKbModule } from './articulos-kb/articulos-kb.module';
+import { TicketArticulosModule } from './ticket-articulos/ticket-articulos.module';
+import { EventosModule } from './eventos/eventos.module';
+import { ReportesModule } from './reportes/reportes.module';
+import { EventosSalientesModule } from './eventos-salientes/eventos-salientes.module';
 
 @Module({
   imports: [
@@ -27,6 +35,14 @@ import { TypeOrmModule } from '@nestjs/typeorm';
         },
       }),
     }),
+    ClientesModule,
+    TicketsModule,
+    InteraccionesModule,
+    ArticulosKbModule,
+    TicketArticulosModule,
+    EventosModule,
+    ReportesModule,
+    EventosSalientesModule,
   ],
 })
 export class AppModule {}
