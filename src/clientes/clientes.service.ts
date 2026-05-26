@@ -72,7 +72,10 @@ export class ClientesService {
     return this.mapToDto(cliente);
   }
 
-  async update(id: number, updateClienteDto: UpdateClienteDto): Promise<ClienteDto> {
+  async update(
+    id: number,
+    updateClienteDto: UpdateClienteDto,
+  ): Promise<ClienteDto> {
     const cliente = await this.clientesRepository.findOne({ where: { id } });
 
     if (!cliente) {
@@ -101,8 +104,12 @@ export class ClientesService {
   async compareClients(
     compareClientesDto: CompareClientesDto,
   ): Promise<DuplicateMatchDto> {
-    const clienteA = await this.getClientOrFail(compareClientesDto.cliente_a_id);
-    const clienteB = await this.getClientOrFail(compareClientesDto.cliente_b_id);
+    const clienteA = await this.getClientOrFail(
+      compareClientesDto.cliente_a_id,
+    );
+    const clienteB = await this.getClientOrFail(
+      compareClientesDto.cliente_b_id,
+    );
 
     return this.buildDuplicateMatch(clienteA, clienteB);
   }
@@ -116,8 +123,15 @@ export class ClientesService {
     const groups: DuplicateGroupDto[] = [];
 
     for (let index = 0; index < clientes.length; index += 1) {
-      for (let compareIndex = index + 1; compareIndex < clientes.length; compareIndex += 1) {
-        const match = this.buildDuplicateMatch(clientes[index], clientes[compareIndex]);
+      for (
+        let compareIndex = index + 1;
+        compareIndex < clientes.length;
+        compareIndex += 1
+      ) {
+        const match = this.buildDuplicateMatch(
+          clientes[index],
+          clientes[compareIndex],
+        );
 
         if (match.similarity_score >= threshold) {
           groups.push({
@@ -134,8 +148,13 @@ export class ClientesService {
   }
 
   async mergeClients(mergeClientesDto: MergeClientesDto): Promise<ClienteDto> {
-    if (mergeClientesDto.cliente_principal_id === mergeClientesDto.cliente_secundario_id) {
-      throw new BadRequestException('Los clientes a fusionar deben ser distintos');
+    if (
+      mergeClientesDto.cliente_principal_id ===
+      mergeClientesDto.cliente_secundario_id
+    ) {
+      throw new BadRequestException(
+        'Los clientes a fusionar deben ser distintos',
+      );
     }
 
     const principal = await this.getClientOrFail(
@@ -219,7 +238,10 @@ export class ClientesService {
       matchedFields.push('nombre_completo');
     }
 
-    const companySimilarity = this.stringSimilarity(clienteA.empresa, clienteB.empresa);
+    const companySimilarity = this.stringSimilarity(
+      clienteA.empresa,
+      clienteB.empresa,
+    );
     if (companySimilarity >= 0.6) {
       score += Math.round(companySimilarity * 5);
       matchedFields.push('empresa');
@@ -256,7 +278,10 @@ export class ClientesService {
     };
   }
 
-  private stringSimilarity(valueA?: string | null, valueB?: string | null): number {
+  private stringSimilarity(
+    valueA?: string | null,
+    valueB?: string | null,
+  ): number {
     const normalizedA = this.normalizeText(valueA);
     const normalizedB = this.normalizeText(valueB);
 

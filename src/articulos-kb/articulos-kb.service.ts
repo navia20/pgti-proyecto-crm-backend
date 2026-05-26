@@ -13,7 +13,9 @@ export class ArticulosKbService {
     private articuloRepository: Repository<ArticuloKbEntity>,
   ) {}
 
-  async create(createArticuloKbDto: CreateArticuloKbDto): Promise<ArticuloKbDto> {
+  async create(
+    createArticuloKbDto: CreateArticuloKbDto,
+  ): Promise<ArticuloKbDto> {
     const articulo = this.articuloRepository.create(createArticuloKbDto);
     const savedArticulo = await this.articuloRepository.save(articulo);
     return this.mapToDto(savedArticulo);
@@ -76,13 +78,10 @@ export class ArticulosKbService {
         keywords
           .map((_, index) => `articulo.titulo ILIKE :keyword${index}`)
           .join(' OR '),
-        keywords.reduce(
-          (acc, keyword, index) => {
-            acc[`keyword${index}`] = `%${keyword}%`;
-            return acc;
-          },
-          {},
-        ),
+        keywords.reduce((acc, keyword, index) => {
+          acc[`keyword${index}`] = `%${keyword}%`;
+          return acc;
+        }, {}),
       )
       .orderBy('articulo.creado_en', 'DESC')
       .getMany();

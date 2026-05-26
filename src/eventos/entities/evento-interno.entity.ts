@@ -1,7 +1,21 @@
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn } from 'typeorm';
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  CreateDateColumn,
+} from 'typeorm';
 
-export type TipoEventoInterno = 'cliente_actualizado' | 'cliente_fusionado' | 'ticket_creado' | 'ticket_actualizado' | 'interaccion_creada';
-export type EstadoEventoInterno = 'pendiente' | 'procesado' | 'error' | 'descartado';
+export type TipoEventoInterno =
+  | 'cliente_actualizado'
+  | 'cliente_fusionado'
+  | 'ticket_creado'
+  | 'ticket_actualizado'
+  | 'interaccion_creada';
+export type EstadoEventoInterno =
+  | 'pendiente'
+  | 'procesado'
+  | 'error'
+  | 'descartado';
 
 @Entity('eventos_internos')
 export class EventoInternoEntity {
@@ -10,7 +24,13 @@ export class EventoInternoEntity {
 
   @Column({
     type: 'enum',
-    enum: ['cliente_actualizado', 'cliente_fusionado', 'ticket_creado', 'ticket_actualizado', 'interaccion_creada'],
+    enum: [
+      'cliente_actualizado',
+      'cliente_fusionado',
+      'ticket_creado',
+      'ticket_actualizado',
+      'interaccion_creada',
+    ],
   })
   tipo: TipoEventoInterno;
 

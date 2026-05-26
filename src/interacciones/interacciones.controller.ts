@@ -1,11 +1,4 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Delete,
-  Param,
-  Body,
-} from '@nestjs/common';
+import { Controller, Get, Post, Delete, Param, Body } from '@nestjs/common';
 import { InteraccionesService } from './interacciones.service';
 import { CreateInteraccionDto } from './dtos/create-interaccion.dto';
 

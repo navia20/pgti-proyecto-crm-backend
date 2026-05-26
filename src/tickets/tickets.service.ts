@@ -1,4 +1,8 @@
-import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  BadRequestException,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { TicketEntity, TicketPriority } from './entities/ticket.entity';
@@ -98,7 +102,10 @@ export class TicketsService {
     return tickets.map((t) => this.mapToDto(t));
   }
 
-  async update(id: string, updateTicketDto: UpdateTicketDto): Promise<TicketDto> {
+  async update(
+    id: string,
+    updateTicketDto: UpdateTicketDto,
+  ): Promise<TicketDto> {
     const ticket = await this.ticketRepository.findOne({ where: { id } });
 
     if (!ticket) {

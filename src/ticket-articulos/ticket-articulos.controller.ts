@@ -12,7 +12,9 @@ import { CreateTicketArticuloDto } from './dtos/create-ticket-articulo.dto';
 
 @Controller('api/v1/ticket-articulos')
 export class TicketArticulosController {
-  constructor(private readonly ticketArticulosService: TicketArticulosService) {}
+  constructor(
+    private readonly ticketArticulosService: TicketArticulosService,
+  ) {}
 
   @Post()
   async create(@Body() createTicketArticuloDto: CreateTicketArticuloDto) {

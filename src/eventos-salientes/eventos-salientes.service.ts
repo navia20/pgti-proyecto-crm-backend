@@ -1,7 +1,10 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { EventoSalienteEntity } from './entities/evento-saliente.entity';
+import {
+  EventoSalienteEntity,
+  EstadoEventoSaliente,
+} from './entities/evento-saliente.entity';
 import {
   EventoSalienteDto,
   CreateEventoSalienteDto,
@@ -23,7 +26,7 @@ export class EventosSalientesService {
       tipo: createEventoDto.tipo,
       payload: createEventoDto.payload || {},
       destino_url: createEventoDto.destino_url,
-      estado: 'pendiente_envio',
+      estado: 'pendiente_envio' as EstadoEventoSaliente,
     });
 
     const saved = await this.eventosSalientesRepository.save(evento);

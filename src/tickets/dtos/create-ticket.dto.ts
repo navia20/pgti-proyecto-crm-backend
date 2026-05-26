@@ -1,4 +1,10 @@
-import { IsString, IsEnum, IsOptional, IsNumber, IsUUID } from 'class-validator';
+import {
+  IsString,
+  IsEnum,
+  IsOptional,
+  IsNumber,
+  IsUUID,
+} from 'class-validator';
 
 export enum TicketChannelEnum {
   CHAT = 'chat',

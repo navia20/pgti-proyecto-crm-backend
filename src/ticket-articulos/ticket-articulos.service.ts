@@ -12,7 +12,9 @@ export class TicketArticulosService {
     private ticketArticuloRepository: Repository<TicketArticuloEntity>,
   ) {}
 
-  async create(createTicketArticuloDto: CreateTicketArticuloDto): Promise<TicketArticuloDto> {
+  async create(
+    createTicketArticuloDto: CreateTicketArticuloDto,
+  ): Promise<TicketArticuloDto> {
     const ticketArticulo = this.ticketArticuloRepository.create(
       createTicketArticuloDto,
     );

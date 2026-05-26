@@ -1,8 +1,14 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { EventoInternoEntity } from './entities/evento-interno.entity';
-import { EventoInternoDto, CreateEventoInternoDto } from './dtos/evento-interno.dto';
+import {
+  EventoInternoEntity,
+  EstadoEventoInterno,
+} from './entities/evento-interno.entity';
+import {
+  EventoInternoDto,
+  CreateEventoInternoDto,
+} from './dtos/evento-interno.dto';
 
 @Injectable()
 export class EventosService {
@@ -13,14 +19,16 @@ export class EventosService {
     private readonly eventosRepository: Repository<EventoInternoEntity>,
   ) {}
 
-  async registrar(createEventoDto: CreateEventoInternoDto): Promise<EventoInternoDto> {
+  async registrar(
+    createEventoDto: CreateEventoInternoDto,
+  ): Promise<EventoInternoDto> {
     const evento = this.eventosRepository.create({
-      tipo: createEventoDto.tipo as any,
+      tipo: createEventoDto.tipo,
       datos_previos: createEventoDto.datos_previos || {},
       datos_nuevos: createEventoDto.datos_nuevos || {},
       usuario_id: createEventoDto.usuario_id,
       razon_cambio: createEventoDto.razon_cambio,
-      estado: 'pendiente',
+      estado: 'pendiente' as EstadoEventoInterno,
     });
 
     const saved = await this.eventosRepository.save(evento);
@@ -35,7 +43,10 @@ export class EventosService {
       query.where('evento.estado = :estado', { estado });
     }
 
-    const eventos = await query.orderBy('evento.creado_en', 'DESC').take(1000).getMany();
+    const eventos = await query
+      .orderBy('evento.creado_en', 'DESC')
+      .take(1000)
+      .getMany();
     return eventos.map((e) => this.mapToDto(e));
   }
 
@@ -44,7 +55,9 @@ export class EventosService {
   }
 
   async marcarProcesado(eventoId: string): Promise<EventoInternoDto> {
-    const evento = await this.eventosRepository.findOne({ where: { id: eventoId } });
+    const evento = await this.eventosRepository.findOne({
+      where: { id: eventoId },
+    });
 
     if (!evento) {
       throw new Error(`Evento ${eventoId} no encontrado`);
@@ -58,8 +71,13 @@ export class EventosService {
     return this.mapToDto(saved);
   }
 
-  async marcarError(eventoId: string, errorMsg: string): Promise<EventoInternoDto> {
-    const evento = await this.eventosRepository.findOne({ where: { id: eventoId } });
+  async marcarError(
+    eventoId: string,
+    errorMsg: string,
+  ): Promise<EventoInternoDto> {
+    const evento = await this.eventosRepository.findOne({
+      where: { id: eventoId },
+    });
 
     if (!evento) {
       throw new Error(`Evento ${eventoId} no encontrado`);

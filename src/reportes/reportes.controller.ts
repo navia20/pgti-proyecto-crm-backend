@@ -31,7 +31,14 @@ export class ReportesController {
   }
 
   @Get('metricas/interacciones')
-  async metricsInteractions(@Query('dias') dias?: string) {
-    return this.reportesService.obtenerMetricasInteracciones(dias ? Number(dias) : 30);
+  async metricsInteractions(@Query('dias') dias?: string): Promise<{
+    total: number;
+    por_tipo_autor: { cliente: number; agente: number; sistema: number };
+    notas_internas: number;
+    promedio_por_ticket: number;
+  }> {
+    return this.reportesService.obtenerMetricasInteracciones(
+      dias ? Number(dias) : 30,
+    );
   }
 }

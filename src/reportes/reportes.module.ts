@@ -9,7 +9,12 @@ import { ReportesController } from './reportes.controller';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([TicketEntity, InteraccionEntity, ArticuloKbEntity, TicketArticuloEntity]),
+    TypeOrmModule.forFeature([
+      TicketEntity,
+      InteraccionEntity,
+      ArticuloKbEntity,
+      TicketArticuloEntity,
+    ]),
   ],
   providers: [ReportesService],
   controllers: [ReportesController],

@@ -1,7 +1,21 @@
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn } from 'typeorm';
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  CreateDateColumn,
+} from 'typeorm';
 
-export type TipoEventoSaliente = 'ticket_creado' | 'ticket_actualizado' | 'cliente_actualizado' | 'interaccion_nueva' | 'ticket_resuelto';
-export type EstadoEventoSaliente = 'pendiente_envio' | 'enviado' | 'fallo' | 'cancelado';
+export type TipoEventoSaliente =
+  | 'ticket_creado'
+  | 'ticket_actualizado'
+  | 'cliente_actualizado'
+  | 'interaccion_nueva'
+  | 'ticket_resuelto';
+export type EstadoEventoSaliente =
+  | 'pendiente_envio'
+  | 'enviado'
+  | 'fallo'
+  | 'cancelado';
 
 @Entity('eventos_salientes')
 export class EventoSalienteEntity {
@@ -10,7 +24,13 @@ export class EventoSalienteEntity {
 
   @Column({
     type: 'enum',
-    enum: ['ticket_creado', 'ticket_actualizado', 'cliente_actualizado', 'interaccion_nueva', 'ticket_resuelto'],
+    enum: [
+      'ticket_creado',
+      'ticket_actualizado',
+      'cliente_actualizado',
+      'interaccion_nueva',
+      'ticket_resuelto',
+    ],
   })
   tipo: TipoEventoSaliente;
 

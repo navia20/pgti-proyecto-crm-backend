@@ -29,7 +29,13 @@ export class TicketsController {
     @Query('prioridad') prioridad?: string,
     @Query('cliente_id') cliente_id?: number,
   ) {
-    return this.ticketsService.findAll(skip, take, estado, prioridad, cliente_id);
+    return this.ticketsService.findAll(
+      skip,
+      take,
+      estado,
+      prioridad,
+      cliente_id,
+    );
   }
 
   @Get('client/:clienteId')

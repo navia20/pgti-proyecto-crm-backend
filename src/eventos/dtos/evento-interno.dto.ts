@@ -1,7 +1,12 @@
+import {
+  TipoEventoInterno,
+  EstadoEventoInterno,
+} from '../entities/evento-interno.entity';
+
 export class EventoInternoDto {
   id: string;
-  tipo: string;
-  estado: string;
+  tipo: TipoEventoInterno;
+  estado: EstadoEventoInterno;
   datos_previos: Record<string, any>;
   datos_nuevos: Record<string, any>;
   usuario_id?: string;
@@ -13,7 +18,7 @@ export class EventoInternoDto {
 }
 
 export class CreateEventoInternoDto {
-  tipo: string;
+  tipo: TipoEventoInterno;
   datos_previos: Record<string, any>;
   datos_nuevos: Record<string, any>;
   usuario_id?: string;

@@ -4,7 +4,9 @@ import { CreateEventoSalienteDto } from './dtos/evento-saliente.dto';
 
 @Controller('api/v1/eventos-salientes')
 export class EventosSalientesController {
-  constructor(private readonly eventosSalientesService: EventosSalientesService) {}
+  constructor(
+    private readonly eventosSalientesService: EventosSalientesService,
+  ) {}
 
   @Post()
   async create(@Body() createEventoDto: CreateEventoSalienteDto) {
@@ -27,8 +29,15 @@ export class EventosSalientesController {
   }
 
   @Post(':id/fallo')
-  async markFailed(@Param('id') id: string, @Body() body: { error: string; segundos_reintentar?: number }) {
-    return this.eventosSalientesService.marcarFallo(id, body.error, body.segundos_reintentar || 3600);
+  async markFailed(
+    @Param('id') id: string,
+    @Body() body: { error: string; segundos_reintentar?: number },
+  ) {
+    return this.eventosSalientesService.marcarFallo(
+      id,
+      body.error,
+      body.segundos_reintentar || 3600,
+    );
   }
 
   @Post(':id/cancelar')

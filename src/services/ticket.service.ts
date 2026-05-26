@@ -1,15 +1,19 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { TicketEntity } from '../tickets/entities/ticket.entity';
+import {
+  TicketEntity,
+  TicketChannel,
+  TicketPriority,
+} from '../tickets/entities/ticket.entity';
 import { InteraccionEntity } from '../interacciones/entities/interaccion.entity';
 import { ClienteEntity } from '../clientes/entities/cliente.entity';
 
 export interface CreateTicketDto {
   cliente_id?: number;
   titulo: string;
-  canal: string;
-  prioridad: string;
+  canal: TicketChannel;
+  prioridad: TicketPriority;
   descripcion: string;
   categoria?: string;
 }
@@ -65,19 +69,21 @@ export class TicketService {
     const ticket = new TicketEntity();
     ticket.cliente_id = clienteId;
     ticket.asunto = dto.titulo;
-    ticket.canal = dto.canal as any;
-    ticket.prioridad = dto.prioridad as any;
-    ticket.estado = 'abierto' as any;
+    ticket.canal = dto.canal;
+    ticket.prioridad = dto.prioridad;
+    ticket.estado = 'abierto';
     // ticket.agente_id = null; // Sin asignación manual por ahora
-    ticket.fecha_vencimiento_sla = this.calcularFechaVencimientoSLA(dto.prioridad);
+    ticket.fecha_vencimiento_sla = this.calcularFechaVencimientoSLA(
+      dto.prioridad,
+    );
 
     const ticketGuardado = await this.ticketRepository.save(ticket);
 
     // 2. Crear la primera interacción (descripción)
     const interaccion = new InteraccionEntity();
     interaccion.ticket_id = ticketGuardado.id;
-    interaccion.autor_tipo = 'cliente' as any;
-    interaccion.autor_id = null as any; // Asignación de cliente no disponible
+    interaccion.autor_tipo = 'cliente';
+    interaccion.autor_id = '00000000-0000-0000-0000-000000000000'; // Placeholder UUID para cliente anónimo
     interaccion.contenido = dto.descripcion;
     interaccion.es_nota_interna = false;
 

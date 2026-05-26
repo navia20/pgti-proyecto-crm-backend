@@ -1,7 +1,12 @@
+import {
+  TipoEventoSaliente,
+  EstadoEventoSaliente,
+} from '../entities/evento-saliente.entity';
+
 export class EventoSalienteDto {
   id: string;
-  tipo: string;
-  estado: string;
+  tipo: TipoEventoSaliente;
+  estado: EstadoEventoSaliente;
   payload: Record<string, any>;
   destino_url?: string;
   intentos_envio: number;
@@ -12,7 +17,7 @@ export class EventoSalienteDto {
 }
 
 export class CreateEventoSalienteDto {
-  tipo: string;
+  tipo: TipoEventoSaliente;
   payload: Record<string, any>;
   destino_url?: string;
 }

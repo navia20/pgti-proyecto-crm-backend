@@ -12,7 +12,9 @@ export class InteraccionesService {
     private interaccionRepository: Repository<InteraccionEntity>,
   ) {}
 
-  async create(createInteraccionDto: CreateInteraccionDto): Promise<InteraccionDto> {
+  async create(
+    createInteraccionDto: CreateInteraccionDto,
+  ): Promise<InteraccionDto> {
     const interaccion = this.interaccionRepository.create(createInteraccionDto);
     const savedInteraccion = await this.interaccionRepository.save(interaccion);
     return this.mapToDto(savedInteraccion);
@@ -39,7 +41,9 @@ export class InteraccionesService {
     return this.mapToDto(interaccion);
   }
 
-  async findByTicketIdExcludingInternal(ticketId: string): Promise<InteraccionDto[]> {
+  async findByTicketIdExcludingInternal(
+    ticketId: string,
+  ): Promise<InteraccionDto[]> {
     const interacciones = await this.interaccionRepository.find({
       where: {
         ticket_id: ticketId,

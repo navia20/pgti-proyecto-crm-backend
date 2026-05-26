@@ -1,4 +1,10 @@
-import { IsString, IsEnum, IsBoolean, IsOptional, IsUUID } from 'class-validator';
+import {
+  IsString,
+  IsEnum,
+  IsBoolean,
+  IsOptional,
+  IsUUID,
+} from 'class-validator';
 
 export enum AuthorTypeEnum {
   CLIENTE = 'cliente',
