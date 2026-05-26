@@ -2,7 +2,10 @@ import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { EventoSalienteEntity } from './entities/evento-saliente.entity';
-import { EventoSalienteDto, CreateEventoSalienteDto } from './dtos/evento-saliente.dto';
+import {
+  EventoSalienteDto,
+  CreateEventoSalienteDto,
+} from './dtos/evento-saliente.dto';
 
 @Injectable()
 export class EventosSalientesService {
@@ -13,9 +16,11 @@ export class EventosSalientesService {
     private readonly eventosSalientesRepository: Repository<EventoSalienteEntity>,
   ) {}
 
-  async registrar(createEventoDto: CreateEventoSalienteDto): Promise<EventoSalienteDto> {
+  async registrar(
+    createEventoDto: CreateEventoSalienteDto,
+  ): Promise<EventoSalienteDto> {
     const evento = this.eventosSalientesRepository.create({
-      tipo: createEventoDto.tipo as any,
+      tipo: createEventoDto.tipo,
       payload: createEventoDto.payload || {},
       destino_url: createEventoDto.destino_url,
       estado: 'pendiente_envio',
@@ -33,7 +38,10 @@ export class EventosSalientesService {
       query.where('evento.estado = :estado', { estado });
     }
 
-    const eventos = await query.orderBy('evento.creado_en', 'DESC').take(1000).getMany();
+    const eventos = await query
+      .orderBy('evento.creado_en', 'DESC')
+      .take(1000)
+      .getMany();
     return eventos.map((e) => this.mapToDto(e));
   }
 
@@ -42,7 +50,9 @@ export class EventosSalientesService {
   }
 
   async marcarEnviado(eventoId: string): Promise<EventoSalienteDto> {
-    const evento = await this.eventosSalientesRepository.findOne({ where: { id: eventoId } });
+    const evento = await this.eventosSalientesRepository.findOne({
+      where: { id: eventoId },
+    });
 
     if (!evento) {
       throw new Error(`Evento ${eventoId} no encontrado`);
@@ -56,8 +66,14 @@ export class EventosSalientesService {
     return this.mapToDto(saved);
   }
 
-  async marcarFallo(eventoId: string, errorMsg: string, segundosReintentar: number = 3600): Promise<EventoSalienteDto> {
-    const evento = await this.eventosSalientesRepository.findOne({ where: { id: eventoId } });
+  async marcarFallo(
+    eventoId: string,
+    errorMsg: string,
+    segundosReintentar: number = 3600,
+  ): Promise<EventoSalienteDto> {
+    const evento = await this.eventosSalientesRepository.findOne({
+      where: { id: eventoId },
+    });
 
     if (!evento) {
       throw new Error(`Evento ${eventoId} no encontrado`);
@@ -69,7 +85,9 @@ export class EventosSalientesService {
     if (evento.intentos_envio >= 5) {
       evento.estado = 'fallo';
     } else {
-      evento.proximo_reintento = new Date(Date.now() + segundosReintentar * 1000);
+      evento.proximo_reintento = new Date(
+        Date.now() + segundosReintentar * 1000,
+      );
     }
 
     const saved = await this.eventosSalientesRepository.save(evento);
@@ -81,7 +99,9 @@ export class EventosSalientesService {
   }
 
   async marcarCancelado(eventoId: string): Promise<EventoSalienteDto> {
-    const evento = await this.eventosSalientesRepository.findOne({ where: { id: eventoId } });
+    const evento = await this.eventosSalientesRepository.findOne({
+      where: { id: eventoId },
+    });
 
     if (!evento) {
       throw new Error(`Evento ${eventoId} no encontrado`);
