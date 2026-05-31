@@ -26,7 +26,7 @@ import { EventosSalientesModule } from './eventos-salientes/eventos-salientes.mo
         password: configService.get('DB_PASSWORD'),
         database: configService.get('DB_NAME'),
         entities: [__dirname + '/**/*.entity{.ts,.js}'],
-        synchronize: false,
+        synchronize: true,
         ssl: false,
 
         extra: {
