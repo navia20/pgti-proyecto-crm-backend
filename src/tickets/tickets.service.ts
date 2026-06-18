@@ -9,12 +9,16 @@ import { TicketEntity, TicketPriority } from './entities/ticket.entity';
 import { CreateTicketDto } from './dtos/create-ticket.dto';
 import { UpdateTicketDto } from './dtos/update-ticket.dto';
 import { TicketDto } from './dtos/ticket.dto';
+import { AnalyticsService } from '../analytics/analytics.service';
+import { ClientesService } from '../clientes/clientes.service';
 
 @Injectable()
 export class TicketsService {
   constructor(
     @InjectRepository(TicketEntity)
     private ticketRepository: Repository<TicketEntity>,
+    private readonly analyticsService: AnalyticsService,
+    private readonly clientesService: ClientesService,
   ) {}
 
   private calculateSlaExpiration(prioridad: TicketPriority): Date {
@@ -44,6 +48,9 @@ export class TicketsService {
     });
 
     const savedTicket = await this.ticketRepository.save(ticket);
+
+    this.emitTicketCreado(savedTicket).catch(() => {});
+
     return this.mapToDto(savedTicket);
   }
 
@@ -112,6 +119,9 @@ export class TicketsService {
       throw new NotFoundException(`Ticket ${id} no encontrado`);
     }
 
+    const previousAgenteId = ticket.agente_id;
+    const previousEstado = ticket.estado;
+
     if (updateTicketDto.prioridad) {
       updateTicketDto['fecha_vencimiento_sla'] = this.calculateSlaExpiration(
         updateTicketDto.prioridad,
@@ -120,6 +130,12 @@ export class TicketsService {
 
     Object.assign(ticket, updateTicketDto);
     const updatedTicket = await this.ticketRepository.save(ticket);
+
+    this.emitUpdateEvents(
+      updatedTicket,
+      previousAgenteId,
+      previousEstado,
+    ).catch(() => {});
 
     return this.mapToDto(updatedTicket);
   }
@@ -163,6 +179,77 @@ export class TicketsService {
     });
 
     return { ok, warning, critical };
+  }
+
+  private async emitTicketCreado(ticket: TicketEntity): Promise<void> {
+    let clienteIdentidadId: string | null = null;
+    let email: string | null = null;
+    let telefono: string | null = null;
+
+    if (ticket.cliente_id) {
+      try {
+        const cliente = await this.clientesService.findOne(ticket.cliente_id);
+        clienteIdentidadId = `usr-${cliente.id}`;
+        email = cliente.email;
+        telefono = cliente.telefono ?? null;
+      } catch {
+        // Cliente not found, continue with null values
+      }
+    }
+
+    await this.analyticsService.emit('ticket.creado', {
+      ticket_id: ticket.id,
+      asunto: ticket.asunto,
+      estado: this.analyticsService.mapEstado(ticket.estado),
+      prioridad: this.analyticsService.mapPrioridad(ticket.prioridad),
+      canal: this.analyticsService.mapCanal(ticket.canal),
+      source_project: ticket.pedido_id_ref,
+      cliente_identidad_id: clienteIdentidadId,
+      email,
+      telefono,
+      agente_id: ticket.agente_id,
+      pedido_id_ref: ticket.pedido_id_ref,
+      suscripcion_id_red: ticket.suscripcion_id_ref,
+      fecha_vencimiento_sla: ticket.fecha_vencimiento_sla.toISOString(),
+    });
+  }
+
+  private async emitUpdateEvents(
+    ticket: TicketEntity,
+    previousAgenteId: string | null,
+    previousEstado: string,
+  ): Promise<void> {
+    if (!previousAgenteId && ticket.agente_id) {
+      await this.analyticsService.emit('ticket.asignado', {
+        ticket_id: ticket.id,
+        agente_id: ticket.agente_id,
+        estado: this.analyticsService.mapEstado(ticket.estado),
+      });
+    }
+
+    if (previousEstado !== 'resuelto' && ticket.estado === 'resuelto') {
+      const now = new Date();
+      const resolutionTimeHours =
+        (now.getTime() - ticket.creado_en.getTime()) / (1000 * 60 * 60);
+      const withinSla = now <= ticket.fecha_vencimiento_sla;
+
+      await this.analyticsService.emit('ticket.resuelto', {
+        ticket_id: ticket.id,
+        resolved_at: now.toISOString(),
+        resolution_time_hours: Math.round(resolutionTimeHours * 10) / 10,
+        within_sla: withinSla,
+        agente_id: ticket.agente_id,
+        prioridad: this.analyticsService.mapPrioridad(ticket.prioridad),
+      });
+    }
+
+    if (previousEstado !== 'cerrado' && ticket.estado === 'cerrado') {
+      await this.analyticsService.emit('ticket.cerrado', {
+        ticket_id: ticket.id,
+        closed_at: new Date().toISOString(),
+        csat_score: null,
+      });
+    }
   }
 
   private mapToDto(ticket: TicketEntity): TicketDto {

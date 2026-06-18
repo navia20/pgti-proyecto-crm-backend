@@ -9,6 +9,7 @@ import { TicketArticulosModule } from './ticket-articulos/ticket-articulos.modul
 import { EventosModule } from './eventos/eventos.module';
 import { ReportesModule } from './reportes/reportes.module';
 import { EventosSalientesModule } from './eventos-salientes/eventos-salientes.module';
+import { AnalyticsModule } from './analytics/analytics.module';
 
 @Module({
   imports: [
@@ -43,6 +44,7 @@ import { EventosSalientesModule } from './eventos-salientes/eventos-salientes.mo
     EventosModule,
     ReportesModule,
     EventosSalientesModule,
+    AnalyticsModule,
   ],
 })
 export class AppModule {}
