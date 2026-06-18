@@ -33,9 +33,8 @@ export class AnalyticsService {
     private readonly httpService: HttpService,
     private readonly configService: ConfigService,
   ) {
-    this.analyticsUrl =
-      this.configService.get<string>('ANALYTICS_SERVICE_URL') ||
-      'http://analytics-service:8000/events';
+    const baseUrl = this.configService.get<string>('ANALYTICS_SERVICE_URL') || '';
+    this.analyticsUrl = baseUrl ? `${baseUrl}/v1/events` : '';
   }
 
   async emit(eventType: string, payload: object): Promise<void> {
