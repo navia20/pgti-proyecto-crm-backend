@@ -211,7 +211,7 @@ export class ClientesService {
     const emailA = this.normalizeEmail(clienteA.email);
     const emailB = this.normalizeEmail(clienteB.email);
     if (emailA && emailA === emailB) {
-      score += 35;
+      score += 80;
       matchedFields.push('email');
     }
 
