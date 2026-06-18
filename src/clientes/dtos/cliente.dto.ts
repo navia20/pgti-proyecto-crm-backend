@@ -1,7 +1,7 @@
 export class ClienteDto {
-  id: number;
-  nombre_completo: string;
-  email: string;
+  id!: number;
+  nombre_completo!: string;
+  email!: string;
   telefono?: string;
   documento_identidad?: string;
   empresa?: string;
@@ -11,10 +11,10 @@ export class ClienteDto {
   fecha_ultima_compra?: Date;
   total_gastado?: number;
   pedidos_totales?: number;
-  activo: boolean;
-  es_duplicado: boolean;
+  activo!: boolean;
+  es_duplicado!: boolean;
   fusionado_en_id?: number;
   fusionado_en?: Date;
-  creado_en: Date;
-  actualizado_en: Date;
+  creado_en!: Date;
+  actualizado_en!: Date;
 }
