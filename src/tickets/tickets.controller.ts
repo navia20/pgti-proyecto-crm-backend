@@ -7,18 +7,43 @@ import {
   Param,
   Body,
   Query,
+  Headers,
+  HttpCode,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { TicketsService } from './tickets.service';
 import { CreateTicketDto } from './dtos/create-ticket.dto';
+import { CreateTicketExternoDto } from './dtos/create-ticket-externo.dto';
 import { UpdateTicketDto } from './dtos/update-ticket.dto';
 
 @Controller('api/v1/tickets')
 export class TicketsController {
-  constructor(private readonly ticketsService: TicketsService) {}
+  constructor(
+    private readonly ticketsService: TicketsService,
+    private readonly configService: ConfigService,
+  ) {}
+
+  private getApiKey(sistema: string): string {
+    return this.configService.get<string>(`${sistema.toUpperCase()}_API_KEY`) || '';
+  }
 
   @Post()
   async create(@Body() createTicketDto: CreateTicketDto) {
     return this.ticketsService.create(createTicketDto);
+  }
+
+  @Post('externo')
+  @HttpCode(201)
+  async createExterno(
+    @Body() dto: CreateTicketExternoDto,
+    @Headers('x-api-key') apiKey: string,
+  ) {
+    const expectedKey = this.getApiKey(dto.sistema_origen);
+    if (!expectedKey || apiKey !== expectedKey) {
+      return { ok: false, message: 'API key inválida para este sistema' };
+    }
+    const ticket = await this.ticketsService.createExterno(dto);
+    return { ok: true, ticket };
   }
 
   @Get()

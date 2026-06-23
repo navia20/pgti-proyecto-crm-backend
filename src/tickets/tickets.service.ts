@@ -1,15 +1,13 @@
-import {
-  Injectable,
-  BadRequestException,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { TicketEntity, TicketPriority } from './entities/ticket.entity';
 import { CreateTicketDto } from './dtos/create-ticket.dto';
+import { CreateTicketExternoDto } from './dtos/create-ticket-externo.dto';
 import { UpdateTicketDto } from './dtos/update-ticket.dto';
 import { TicketDto } from './dtos/ticket.dto';
 import { AnalyticsService } from '../analytics/analytics.service';
+import { IncidentesService } from '../incidentes/incidentes.service';
 import { ClientesService } from '../clientes/clientes.service';
 
 @Injectable()
@@ -18,6 +16,7 @@ export class TicketsService {
     @InjectRepository(TicketEntity)
     private ticketRepository: Repository<TicketEntity>,
     private readonly analyticsService: AnalyticsService,
+    private readonly incidentesService: IncidentesService,
     private readonly clientesService: ClientesService,
   ) {}
 
@@ -45,6 +44,35 @@ export class TicketsService {
       fecha_vencimiento_sla: this.calculateSlaExpiration(
         createTicketDto.prioridad,
       ),
+    });
+
+    const savedTicket = await this.ticketRepository.save(ticket);
+
+    this.emitTicketCreado(savedTicket).catch(() => {});
+
+    // TODO: Habilitar cuando el Grupo de Incidentes confirme el endpoint
+    // if (createTicketDto.prioridad === 'critica') {
+    //   const dto = this.mapToDto(savedTicket);
+    //   this.incidentesService.enviarAlerta(dto).catch(() => {});
+    // }
+
+    return this.mapToDto(savedTicket);
+  }
+
+  async createExterno(dto: CreateTicketExternoDto): Promise<TicketDto> {
+    const asunto = dto.descripcion
+      ? `${dto.asunto} - ${dto.descripcion}`
+      : dto.asunto;
+
+    const ticket = this.ticketRepository.create({
+      asunto,
+      canal: 'email',
+      prioridad: dto.prioridad,
+      cliente_id: dto.cliente_id,
+      pedido_id_ref: dto.pedido_id_ref,
+      suscripcion_id_ref: dto.suscripcion_id_ref,
+      estado: 'abierto',
+      fecha_vencimiento_sla: this.calculateSlaExpiration(dto.prioridad),
     });
 
     const savedTicket = await this.ticketRepository.save(ticket);

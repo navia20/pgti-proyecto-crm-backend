@@ -4,12 +4,14 @@ import { TicketEntity } from './entities/ticket.entity';
 import { TicketsService } from './tickets.service';
 import { TicketsController } from './tickets.controller';
 import { AnalyticsModule } from '../analytics/analytics.module';
+import { IncidentesModule } from '../incidentes/incidentes.module';
 import { ClientesModule } from '../clientes/clientes.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([TicketEntity]),
     AnalyticsModule,
+    IncidentesModule,
     ClientesModule,
   ],
   providers: [TicketsService],
