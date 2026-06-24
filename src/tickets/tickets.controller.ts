@@ -24,7 +24,9 @@ export class TicketsController {
   ) {}
 
   private getApiKey(sistema: string): string {
-    return this.configService.get<string>(`${sistema.toUpperCase()}_API_KEY`) || '';
+    return (
+      this.configService.get<string>(`${sistema.toUpperCase()}_API_KEY`) || ''
+    );
   }
 
   @Post()

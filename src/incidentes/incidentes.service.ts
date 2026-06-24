@@ -16,8 +16,7 @@ export class IncidentesService {
   ) {
     this.incidentesUrl =
       this.configService.get<string>('INCIDENTES_SERVICE_URL') || '';
-    this.apiKey =
-      this.configService.get<string>('INCIDENTES_API_KEY') || '';
+    this.apiKey = this.configService.get<string>('INCIDENTES_API_KEY') || '';
   }
 
   async enviarAlerta(ticket: TicketDto): Promise<void> {
@@ -47,17 +46,13 @@ export class IncidentesService {
 
     try {
       await firstValueFrom(
-        this.httpService.post(
-          `${this.incidentesUrl}/api/v1/alertas`,
-          body,
-          {
-            headers: {
-              'Content-Type': 'application/json',
-              'x-api-key': this.apiKey,
-            },
-            timeout: 5000,
+        this.httpService.post(`${this.incidentesUrl}/api/v1/alertas`, body, {
+          headers: {
+            'Content-Type': 'application/json',
+            'x-api-key': this.apiKey,
           },
-        ),
+          timeout: 5000,
+        }),
       );
       this.logger.log(`Alerta de incidente enviada: ticket ${ticket.id}`);
     } catch (err) {

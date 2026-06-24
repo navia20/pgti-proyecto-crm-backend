@@ -1,12 +1,4 @@
-import {
-  IsString,
-  IsEnum,
-  IsOptional,
-  IsNumber,
-  IsUUID,
-  ValidateNested,
-} from 'class-validator';
-import { Type } from 'class-transformer';
+import { IsString, IsEnum, IsOptional, IsNumber } from 'class-validator';
 import { TicketPriorityEnum } from './create-ticket.dto';
 
 export enum TicketSourceEnum {

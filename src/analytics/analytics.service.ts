@@ -33,7 +33,8 @@ export class AnalyticsService {
     private readonly httpService: HttpService,
     private readonly configService: ConfigService,
   ) {
-    const baseUrl = this.configService.get<string>('ANALYTICS_SERVICE_URL') || '';
+    const baseUrl =
+      this.configService.get<string>('ANALYTICS_SERVICE_URL') || '';
     this.analyticsUrl = baseUrl ? `${baseUrl}/v1/events` : '';
   }
 
