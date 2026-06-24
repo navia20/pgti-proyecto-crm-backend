@@ -28,4 +28,20 @@ export class UpdateTicketDto {
   @IsOptional()
   @IsUUID()
   agente_id?: string;
+
+  @IsOptional()
+  @IsString()
+  pedido_id_ref?: string;
+
+  @IsOptional()
+  @IsString()
+  suscripcion_id_ref?: string;
+
+  @IsOptional()
+  @IsString()
+  pago_id_ref?: string;
+
+  @IsOptional()
+  @IsString()
+  salud_ref?: string;
 }

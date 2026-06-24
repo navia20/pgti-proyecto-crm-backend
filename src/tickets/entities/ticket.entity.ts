@@ -62,6 +62,12 @@ export class TicketEntity {
   @UpdateDateColumn()
   actualizado_en: Date;
 
+  @Column({ type: 'varchar', nullable: true })
+  pago_id_ref: string;
+
+  @Column({ type: 'varchar', nullable: true })
+  salud_ref: string;
+
   // Relaciones
   @OneToMany(() => InteraccionEntity, (interaccion) => interaccion.ticket, {
     cascade: true,
