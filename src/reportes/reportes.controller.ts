@@ -41,4 +41,16 @@ export class ReportesController {
       dias ? Number(dias) : 30,
     );
   }
+
+  @Get('metricas/fuente')
+  async metricsSource(): Promise<{
+    pedidos: number;
+    suscripciones: number;
+    pagos: number;
+    salud: number;
+    interno: number;
+    total: number;
+  }> {
+    return this.reportesService.obtenerMetricasPorFuente();
+  }
 }

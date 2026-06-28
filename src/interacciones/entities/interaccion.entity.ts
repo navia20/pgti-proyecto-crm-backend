@@ -24,7 +24,7 @@ export class InteraccionEntity {
   })
   autor_tipo: AuthorType;
 
-  @Column('uuid')
+  @Column('varchar')
   autor_id: string;
 
   @Column('text')

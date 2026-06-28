@@ -206,4 +206,36 @@ export class ReportesService {
           : 0,
     };
   }
+
+  async obtenerMetricasPorFuente(): Promise<{
+    pedidos: number;
+    suscripciones: number;
+    pagos: number;
+    salud: number;
+    interno: number;
+    total: number;
+  }> {
+    const tickets = await this.ticketsRepository.find();
+
+    const pedidos = tickets.filter((t) => t.pedido_id_ref).length;
+    const suscripciones = tickets.filter((t) => t.suscripcion_id_ref).length;
+    const pagos = tickets.filter((t) => t.pago_id_ref).length;
+    const salud = tickets.filter((t) => t.salud_ref).length;
+    const interno = tickets.filter(
+      (t) =>
+        !t.pedido_id_ref &&
+        !t.suscripcion_id_ref &&
+        !t.pago_id_ref &&
+        !t.salud_ref,
+    ).length;
+
+    return {
+      pedidos,
+      suscripciones,
+      pagos,
+      salud,
+      interno,
+      total: tickets.length,
+    };
+  }
 }

@@ -19,7 +19,7 @@ export class CreateInteraccionDto {
   @IsEnum(AuthorTypeEnum)
   autor_tipo: AuthorTypeEnum;
 
-  @IsUUID()
+  @IsString()
   autor_id: string;
 
   @IsString()

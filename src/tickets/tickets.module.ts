@@ -6,6 +6,7 @@ import { TicketsController } from './tickets.controller';
 import { AnalyticsModule } from '../analytics/analytics.module';
 import { IncidentesModule } from '../incidentes/incidentes.module';
 import { ClientesModule } from '../clientes/clientes.module';
+import { InteraccionesModule } from '../interacciones/interacciones.module';
 
 @Module({
   imports: [
@@ -13,6 +14,7 @@ import { ClientesModule } from '../clientes/clientes.module';
     AnalyticsModule,
     IncidentesModule,
     ClientesModule,
+    InteraccionesModule,
   ],
   providers: [TicketsService],
   controllers: [TicketsController],

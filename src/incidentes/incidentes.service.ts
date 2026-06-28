@@ -29,13 +29,13 @@ export class IncidentesService {
       sistema_id: 'P07',
       creado_en: new Date().toISOString(),
       payload: {
-        id: ticket.id,
-        asunto: ticket.asunto,
-        estado: ticket.estado,
+        titulo: ticket.asunto,
         prioridad: ticket.prioridad,
+        id_ticket_interno: ticket.id,
+        agente_asignado: ticket.agente_id ?? null,
         canal: ticket.canal,
+        estado: ticket.estado,
         cliente_id: ticket.cliente_id ?? null,
-        agente_id: ticket.agente_id ?? null,
         fecha_vencimiento_sla: ticket.fecha_vencimiento_sla.toISOString(),
         pedido_id_ref: ticket.pedido_id_ref ?? null,
         suscripcion_id_ref: ticket.suscripcion_id_ref ?? null,
@@ -51,10 +51,11 @@ export class IncidentesService {
             'Content-Type': 'application/json',
             'x-api-key': this.apiKey,
           },
-          timeout: 5000,
+          timeout: 15000,
         }),
       );
       this.logger.log(`Alerta de incidente enviada: ticket ${ticket.id}`);
+      console.log(`body ticket: ${JSON.stringify(body)}`);
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
       this.logger.error(

@@ -45,7 +45,7 @@ export class AnalyticsService {
       await firstValueFrom(
         this.httpService.post(this.analyticsUrl, body, {
           headers: { 'Content-Type': 'application/json' },
-          timeout: 5000,
+          timeout: 15000,
         }),
       );
       this.logger.log(`Evento analytics enviado: ${eventType}`);

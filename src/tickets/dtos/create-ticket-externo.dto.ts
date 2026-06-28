@@ -41,5 +41,13 @@ export class CreateTicketExternoDto {
 
   @IsOptional()
   @IsString()
+  pago_id_ref?: string;
+
+  @IsOptional()
+  @IsString()
+  salud_ref?: string;
+
+  @IsOptional()
+  @IsString()
   contexto?: string;
 }

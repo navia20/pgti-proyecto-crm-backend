@@ -7,12 +7,18 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { TicketEntity, TicketPriority } from './entities/ticket.entity';
 import { CreateTicketDto } from './dtos/create-ticket.dto';
-import { CreateTicketExternoDto } from './dtos/create-ticket-externo.dto';
+import {
+  CreateTicketExternoDto,
+  TicketSourceEnum,
+} from './dtos/create-ticket-externo.dto';
+import { TicketPriorityEnum } from './dtos/create-ticket.dto';
 import { UpdateTicketDto } from './dtos/update-ticket.dto';
 import { TicketDto } from './dtos/ticket.dto';
 import { AnalyticsService } from '../analytics/analytics.service';
 import { IncidentesService } from '../incidentes/incidentes.service';
 import { ClientesService } from '../clientes/clientes.service';
+import { InteraccionesService } from '../interacciones/interacciones.service';
+import { AuthorTypeEnum } from '../interacciones/dtos/create-interaccion.dto';
 
 @Injectable()
 export class TicketsService {
@@ -22,6 +28,7 @@ export class TicketsService {
     private readonly analyticsService: AnalyticsService,
     private readonly incidentesService: IncidentesService,
     private readonly clientesService: ClientesService,
+    private readonly interaccionesService: InteraccionesService,
   ) {}
 
   private calculateSlaExpiration(prioridad: TicketPriority): Date {
@@ -54,27 +61,24 @@ export class TicketsService {
 
     this.emitTicketCreado(savedTicket).catch(() => {});
 
-    // TODO: Habilitar cuando el Grupo de Incidentes confirme el endpoint
-    // if (createTicketDto.prioridad === 'critica') {
-    //   const dto = this.mapToDto(savedTicket);
-    //   this.incidentesService.enviarAlerta(dto).catch(() => {});
-    // }
+    if (createTicketDto.prioridad === TicketPriorityEnum.CRITICA) {
+      const dto = this.mapToDto(savedTicket);
+      this.incidentesService.enviarAlerta(dto).catch(() => {});
+    }
 
     return this.mapToDto(savedTicket);
   }
 
   async createExterno(dto: CreateTicketExternoDto): Promise<TicketDto> {
-    const asunto = dto.descripcion
-      ? `${dto.asunto} - ${dto.descripcion}`
-      : dto.asunto;
-
     const ticket = this.ticketRepository.create({
-      asunto,
+      asunto: dto.asunto,
       canal: 'email',
       prioridad: dto.prioridad,
       cliente_id: dto.cliente_id,
       pedido_id_ref: dto.pedido_id_ref,
       suscripcion_id_ref: dto.suscripcion_id_ref,
+      pago_id_ref: dto.pago_id_ref,
+      salud_ref: dto.salud_ref,
       estado: 'abierto',
       fecha_vencimiento_sla: this.calculateSlaExpiration(dto.prioridad),
     });
@@ -82,6 +86,46 @@ export class TicketsService {
     const savedTicket = await this.ticketRepository.save(ticket);
 
     this.emitTicketCreado(savedTicket).catch(() => {});
+
+    if (dto.descripcion) {
+      let autorId = '00000000-0000-0000-0000-000000000001';
+      if (
+        dto.sistema_origen === TicketSourceEnum.PEDIDOS &&
+        dto.pedido_id_ref
+      ) {
+        autorId = dto.pedido_id_ref;
+      } else if (
+        dto.sistema_origen === TicketSourceEnum.SUSCRIPCIONES &&
+        dto.suscripcion_id_ref
+      ) {
+        autorId = dto.suscripcion_id_ref;
+      } else if (
+        dto.sistema_origen === TicketSourceEnum.PAGOS &&
+        dto.pago_id_ref
+      ) {
+        autorId = dto.pago_id_ref;
+      } else if (
+        dto.sistema_origen === TicketSourceEnum.SALUD &&
+        dto.salud_ref
+      ) {
+        autorId = dto.salud_ref;
+      }
+
+      this.interaccionesService
+        .create({
+          ticket_id: savedTicket.id,
+          autor_tipo: AuthorTypeEnum.SISTEMA,
+          autor_id: autorId,
+          contenido: dto.descripcion,
+          es_nota_interna: false,
+        })
+        .catch(() => {});
+    }
+
+    if (dto.prioridad === TicketPriorityEnum.CRITICA) {
+      const dtoMapped = this.mapToDto(savedTicket);
+      this.incidentesService.enviarAlerta(dtoMapped).catch(() => {});
+    }
 
     return this.mapToDto(savedTicket);
   }
