@@ -39,22 +39,9 @@ export class AnalyticsService {
   }
 
   async emit(eventType: string, payload: object): Promise<void> {
-    const body = { source: 'crm', event_type: eventType, payload };
-
-    try {
-      await firstValueFrom(
-        this.httpService.post(this.analyticsUrl, body, {
-          headers: { 'Content-Type': 'application/json' },
-          timeout: 15000,
-        }),
-      );
-      this.logger.log(`Evento analytics enviado: ${eventType}`);
-    } catch (err) {
-      const message = err instanceof Error ? err.message : String(err);
-      this.logger.error(
-        `Error enviando evento analytics ${eventType}: ${message}`,
-      );
-    }
+    this.logger.warn(
+      `Analytics deshabilitado temporalmente, evento ignorado: ${eventType}`,
+    );
   }
 
   mapEstado(estado: string): string {

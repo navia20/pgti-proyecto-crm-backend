@@ -53,4 +53,8 @@ export class CreateTicketDto {
   @IsOptional()
   @IsString()
   salud_ref?: string;
+
+  @IsOptional()
+  @IsString()
+  descripcion?: string;
 }

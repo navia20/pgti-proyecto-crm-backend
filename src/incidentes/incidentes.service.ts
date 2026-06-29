@@ -19,7 +19,7 @@ export class IncidentesService {
     this.apiKey = this.configService.get<string>('INCIDENTES_API_KEY') || '';
   }
 
-  async enviarAlerta(ticket: TicketDto): Promise<void> {
+  async enviarAlerta(ticket: TicketDto, descripcion?: string): Promise<void> {
     if (!this.incidentesUrl) {
       this.logger.warn('INCIDENTES_SERVICE_URL no configurada, saltando envío');
       return;
@@ -30,6 +30,7 @@ export class IncidentesService {
       creado_en: new Date().toISOString(),
       payload: {
         titulo: ticket.asunto,
+        descripcion: descripcion ?? null,
         prioridad: ticket.prioridad,
         id_ticket_interno: ticket.id,
         agente_asignado: ticket.agente_id ?? null,
@@ -55,7 +56,6 @@ export class IncidentesService {
         }),
       );
       this.logger.log(`Alerta de incidente enviada: ticket ${ticket.id}`);
-      console.log(`body ticket: ${JSON.stringify(body)}`);
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
       this.logger.error(

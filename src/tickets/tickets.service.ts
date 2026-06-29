@@ -63,7 +63,9 @@ export class TicketsService {
 
     if (createTicketDto.prioridad === TicketPriorityEnum.CRITICA) {
       const dto = this.mapToDto(savedTicket);
-      this.incidentesService.enviarAlerta(dto).catch(() => {});
+      this.incidentesService
+        .enviarAlerta(dto, createTicketDto.descripcion)
+        .catch(() => {});
     }
 
     return this.mapToDto(savedTicket);
@@ -124,7 +126,9 @@ export class TicketsService {
 
     if (dto.prioridad === TicketPriorityEnum.CRITICA) {
       const dtoMapped = this.mapToDto(savedTicket);
-      this.incidentesService.enviarAlerta(dtoMapped).catch(() => {});
+      this.incidentesService
+        .enviarAlerta(dtoMapped, dto.descripcion)
+        .catch(() => {});
     }
 
     return this.mapToDto(savedTicket);
