@@ -5,7 +5,7 @@ import { firstValueFrom } from 'rxjs';
 
 const ESTADO_MAP: Record<string, string> = {
   abierto: 'Abierto',
-  progreso: 'En Progreso',
+  progreso: 'Progreso',
   resuelto: 'Resuelto',
   cerrado: 'Cerrado',
 };
@@ -39,9 +39,28 @@ export class AnalyticsService {
   }
 
   async emit(eventType: string, payload: object): Promise<void> {
-    this.logger.warn(
-      `Analytics deshabilitado temporalmente, evento ignorado: ${eventType}`,
-    );
+    if (!this.analyticsUrl) {
+      this.logger.warn(
+        `Analytics deshabilitado: ANALYTICS_SERVICE_URL no configurado, evento ignorado: ${eventType}`,
+      );
+      return;
+    }
+
+    const event = {
+      source: 'crm' as const,
+      event_type: eventType,
+      payload,
+    };
+
+    try {
+      await firstValueFrom(this.httpService.post(this.analyticsUrl, event));
+      this.logger.log(`Evento analytics enviado: ${eventType}`);
+    } catch (error) {
+      this.logger.error(
+        `Error al enviar evento analytics: ${eventType}`,
+        error,
+      );
+    }
   }
 
   mapEstado(estado: string): string {

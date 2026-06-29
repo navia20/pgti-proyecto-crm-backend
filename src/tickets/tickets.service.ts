@@ -1,6 +1,7 @@
 import {
   Injectable,
   BadRequestException,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -22,6 +23,8 @@ import { AuthorTypeEnum } from '../interacciones/dtos/create-interaccion.dto';
 
 @Injectable()
 export class TicketsService {
+  private readonly logger = new Logger(TicketsService.name);
+
   constructor(
     @InjectRepository(TicketEntity)
     private ticketRepository: Repository<TicketEntity>,
@@ -308,19 +311,25 @@ export class TicketsService {
     }
 
     if (previousEstado !== 'resuelto' && ticket.estado === 'resuelto') {
-      const now = new Date();
-      const resolutionTimeHours =
-        (now.getTime() - ticket.creado_en.getTime()) / (1000 * 60 * 60);
-      const withinSla = now <= ticket.fecha_vencimiento_sla;
+      if (!ticket.agente_id) {
+        this.logger.warn(
+          `Ticket ${ticket.id} resuelto sin agente asignado, evento ticket.resuelto omitido`,
+        );
+      } else {
+        const now = new Date();
+        const resolutionTimeHours =
+          (now.getTime() - ticket.creado_en.getTime()) / (1000 * 60 * 60);
+        const withinSla = now <= ticket.fecha_vencimiento_sla;
 
-      await this.analyticsService.emit('ticket.resuelto', {
-        ticket_id: ticket.id,
-        resolved_at: now.toISOString(),
-        resolution_time_hours: Math.round(resolutionTimeHours * 10) / 10,
-        within_sla: withinSla,
-        agente_id: ticket.agente_id,
-        prioridad: this.analyticsService.mapPrioridad(ticket.prioridad),
-      });
+        await this.analyticsService.emit('ticket.resuelto', {
+          ticket_id: ticket.id,
+          resolved_at: now.toISOString(),
+          resolution_time_hours: Math.round(resolutionTimeHours * 10) / 10,
+          within_sla: withinSla,
+          agente_id: ticket.agente_id,
+          prioridad: this.analyticsService.mapPrioridad(ticket.prioridad),
+        });
+      }
     }
 
     if (previousEstado !== 'cerrado' && ticket.estado === 'cerrado') {

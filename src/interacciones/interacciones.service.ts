@@ -6,6 +6,12 @@ import { CreateInteraccionDto } from './dtos/create-interaccion.dto';
 import { InteraccionDto } from './dtos/interaccion.dto';
 import { AnalyticsService } from '../analytics/analytics.service';
 
+const AUTOR_TIPO_MAP: Record<string, string> = {
+  cliente: 'Cliente',
+  agente: 'Agente',
+  sistema: 'Sistema',
+};
+
 @Injectable()
 export class InteraccionesService {
   constructor(
@@ -24,7 +30,9 @@ export class InteraccionesService {
       .emit('interaccion.creada', {
         interaccion_id: savedInteraccion.id,
         ticket_id: savedInteraccion.ticket_id,
-        autor_tipo: savedInteraccion.autor_tipo,
+        autor_tipo:
+          AUTOR_TIPO_MAP[savedInteraccion.autor_tipo] ||
+          savedInteraccion.autor_tipo,
         autor_id: savedInteraccion.autor_id,
         contenido: savedInteraccion.contenido,
         es_nota_interna: savedInteraccion.es_nota_interna,
