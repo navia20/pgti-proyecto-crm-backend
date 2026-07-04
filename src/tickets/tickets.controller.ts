@@ -55,6 +55,11 @@ export class TicketsController {
     @Query('estado') estado?: string,
     @Query('prioridad') prioridad?: string,
     @Query('cliente_id') cliente_id?: number,
+    @Query('canal') canal?: string,
+    @Query('search') search?: string,
+    @Query('referencia') referencia?: string,
+    @Query('ordenar') ordenar?: string,
+    @Query('direccion') direccion?: string,
   ) {
     return this.ticketsService.findAll(
       skip,
@@ -62,6 +67,11 @@ export class TicketsController {
       estado,
       prioridad,
       cliente_id,
+      canal,
+      search,
+      referencia,
+      ordenar,
+      direccion,
     );
   }
 
@@ -73,6 +83,46 @@ export class TicketsController {
   @Get('sla-status')
   async getTicketsBySlaStatus() {
     return this.ticketsService.getTicketsBySlaStatus();
+  }
+
+  @Get('externo/:id')
+  async findExterno(
+    @Param('id') id: string,
+    @Query('api_key') apiKey: string,
+  ) {
+    if (!apiKey) {
+      return { ok: false, message: 'api_key es requerida' };
+    }
+
+    const validKeys = [
+      this.getApiKey('pedidos'),
+      this.getApiKey('suscripciones'),
+      this.getApiKey('salud'),
+    ];
+
+    if (!validKeys.includes(apiKey)) {
+      return { ok: false, message: 'API key inválida' };
+    }
+
+    try {
+      const ticket = await this.ticketsService.findById(id);
+      return {
+        ok: true,
+        ticket: {
+          id: ticket.id,
+          asunto: ticket.asunto,
+          estado: ticket.estado,
+          prioridad: ticket.prioridad,
+          canal: ticket.canal,
+          cliente_nombre: ticket.cliente_nombre,
+          fecha_vencimiento_sla: ticket.fecha_vencimiento_sla,
+          creado_en: ticket.creado_en,
+          actualizado_en: ticket.actualizado_en,
+        },
+      };
+    } catch {
+      return { ok: false, message: 'Ticket no encontrado' };
+    }
   }
 
   @Get(':id')

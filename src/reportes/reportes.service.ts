@@ -238,4 +238,68 @@ export class ReportesService {
       total: tickets.length,
     };
   }
+
+  async obtenerTendencia(dias: number = 7): Promise<{
+    fecha: string;
+    abiertos: number;
+    cerrados: number;
+    resueltos: number;
+  }[]> {
+    const ahora = new Date();
+    const resultado: { fecha: string; abiertos: number; cerrados: number; resueltos: number }[] = [];
+
+    for (let i = dias - 1; i >= 0; i--) {
+      const inicioDia = new Date(ahora);
+      inicioDia.setDate(ahora.getDate() - i);
+      inicioDia.setHours(0, 0, 0, 0);
+
+      const finDia = new Date(inicioDia);
+      finDia.setHours(23, 59, 59, 999);
+
+      const ticketsCreados = await this.ticketsRepository.find({
+        where: { creado_en: Between(inicioDia, finDia) },
+      });
+
+      const ticketsCerrados = await this.ticketsRepository
+        .createQueryBuilder('ticket')
+        .where('ticket.estado = :estado', { estado: 'cerrado' })
+        .andWhere('ticket.actualizado_en BETWEEN :inicio AND :fin', { inicio: inicioDia, fin: finDia })
+        .getMany();
+
+      const ticketsResueltos = await this.ticketsRepository
+        .createQueryBuilder('ticket')
+        .where('ticket.estado = :estado', { estado: 'resuelto' })
+        .andWhere('ticket.actualizado_en BETWEEN :inicio AND :fin', { inicio: inicioDia, fin: finDia })
+        .getMany();
+
+      const diaLabel = inicioDia.toLocaleDateString('es-ES', { weekday: 'short' });
+
+      resultado.push({
+        fecha: diaLabel,
+        abiertos: ticketsCreados.length,
+        cerrados: ticketsCerrados.length,
+        resueltos: ticketsResueltos.length,
+      });
+    }
+
+    return resultado;
+  }
+
+  async obtenerMetricasInteraccionesPorTipo(): Promise<{
+    total: number;
+    por_tipo: { cliente: number; agente: number; sistema: number };
+    notas_internas: number;
+  }> {
+    const interacciones = await this.interaccionesRepository.find();
+
+    return {
+      total: interacciones.length,
+      por_tipo: {
+        cliente: interacciones.filter((i) => i.autor_tipo === 'cliente').length,
+        agente: interacciones.filter((i) => i.autor_tipo === 'agente').length,
+        sistema: interacciones.filter((i) => i.autor_tipo === 'sistema').length,
+      },
+      notas_internas: interacciones.filter((i) => i.es_nota_interna).length,
+    };
+  }
 }

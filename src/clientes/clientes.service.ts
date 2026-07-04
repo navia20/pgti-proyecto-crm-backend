@@ -4,7 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, IsNull } from 'typeorm';
 import { ClienteEntity } from './entities/cliente.entity';
 import { CreateClienteDto } from './dtos/create-cliente.dto';
 import { UpdateClienteDto } from './dtos/update-cliente.dto';
@@ -56,6 +56,7 @@ export class ClientesService {
 
   async findAll(): Promise<ClienteDto[]> {
     const clientes = await this.clientesRepository.find({
+      where: { eliminado_en: IsNull() },
       order: { creado_en: 'DESC' },
     });
 
@@ -63,13 +64,45 @@ export class ClientesService {
   }
 
   async findOne(id: number): Promise<ClienteDto> {
-    const cliente = await this.clientesRepository.findOne({ where: { id } });
+    const cliente = await this.clientesRepository.findOne({
+      where: { id, eliminado_en: IsNull() },
+    });
 
     if (!cliente) {
       throw new NotFoundException(`Cliente ${id} no encontrado`);
     }
 
     return this.mapToDto(cliente);
+  }
+
+  async findByIds(ids: number[]): Promise<ClienteDto[]> {
+    const clientes = await this.clientesRepository
+      .createQueryBuilder('cliente')
+      .where('cliente.id IN (:...ids)', { ids })
+      .getMany();
+
+    return clientes.map((c) => this.mapToDto(c));
+  }
+
+  async findByEmailOrTelefono(
+    email?: string,
+    telefono?: string,
+  ): Promise<ClienteDto | null> {
+    if (email) {
+      const cliente = await this.clientesRepository.findOne({
+        where: { email },
+      });
+      if (cliente) return this.mapToDto(cliente);
+    }
+
+    if (telefono) {
+      const cliente = await this.clientesRepository.findOne({
+        where: { telefono },
+      });
+      if (cliente) return this.mapToDto(cliente);
+    }
+
+    return null;
   }
 
   async update(
@@ -94,11 +127,14 @@ export class ClientesService {
   }
 
   async remove(id: number): Promise<void> {
-    const result = await this.clientesRepository.delete(id);
+    const cliente = await this.clientesRepository.findOne({ where: { id } });
 
-    if (result.affected === 0) {
+    if (!cliente) {
       throw new NotFoundException(`Cliente ${id} no encontrado`);
     }
+
+    cliente.eliminado_en = new Date();
+    await this.clientesRepository.save(cliente);
   }
 
   async compareClients(
@@ -358,6 +394,7 @@ export class ClientesService {
       es_duplicado: cliente.es_duplicado,
       fusionado_en_id: cliente.fusionado_en_id,
       fusionado_en: cliente.fusionado_en,
+      eliminado_en: cliente.eliminado_en,
       creado_en: cliente.creado_en,
       actualizado_en: cliente.actualizado_en,
     };

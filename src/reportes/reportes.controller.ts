@@ -53,4 +53,14 @@ export class ReportesController {
   }> {
     return this.reportesService.obtenerMetricasPorFuente();
   }
+
+  @Get('metricas/tendencia')
+  async metricsTrend(@Query('dias') dias?: string) {
+    return this.reportesService.obtenerTendencia(dias ? Number(dias) : 7);
+  }
+
+  @Get('metricas/interacciones-tipo')
+  async metricsInteractionsByType() {
+    return this.reportesService.obtenerMetricasInteraccionesPorTipo();
+  }
 }

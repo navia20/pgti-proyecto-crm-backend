@@ -42,6 +42,9 @@ lerna-debug.log*
 .env.production.local
 .env.local
 
+# Docs (contienen API keys)
+/docs
+
 # temp directory
 .temp
 .tmp
