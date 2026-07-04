@@ -2,7 +2,10 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { InteraccionEntity } from './entities/interaccion.entity';
-import { CreateInteraccionDto } from './dtos/create-interaccion.dto';
+import {
+  CreateInteraccionDto,
+  AuthorTypeEnum,
+} from './dtos/create-interaccion.dto';
 import { InteraccionDto } from './dtos/interaccion.dto';
 import { TicketEntity } from '../tickets/entities/ticket.entity';
 // import { AnalyticsService } from '../analytics/analytics.service';
@@ -23,7 +26,7 @@ export class InteraccionesService {
     const interaccion = this.interaccionRepository.create(createInteraccionDto);
     const savedInteraccion = await this.interaccionRepository.save(interaccion);
 
-    if (createInteraccionDto.autor_tipo === 'agente') {
+    if (createInteraccionDto.autor_tipo === AuthorTypeEnum.AGENTE) {
       const ticket = await this.ticketRepository.findOne({
         where: { id: createInteraccionDto.ticket_id },
       });
