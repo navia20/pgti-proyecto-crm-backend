@@ -239,14 +239,21 @@ export class ReportesService {
     };
   }
 
-  async obtenerTendencia(dias: number = 7): Promise<{
-    fecha: string;
-    abiertos: number;
-    cerrados: number;
-    resueltos: number;
-  }[]> {
+  async obtenerTendencia(dias: number = 7): Promise<
+    {
+      fecha: string;
+      abiertos: number;
+      cerrados: number;
+      resueltos: number;
+    }[]
+  > {
     const ahora = new Date();
-    const resultado: { fecha: string; abiertos: number; cerrados: number; resueltos: number }[] = [];
+    const resultado: {
+      fecha: string;
+      abiertos: number;
+      cerrados: number;
+      resueltos: number;
+    }[] = [];
 
     for (let i = dias - 1; i >= 0; i--) {
       const inicioDia = new Date(ahora);
@@ -263,16 +270,24 @@ export class ReportesService {
       const ticketsCerrados = await this.ticketsRepository
         .createQueryBuilder('ticket')
         .where('ticket.estado = :estado', { estado: 'cerrado' })
-        .andWhere('ticket.actualizado_en BETWEEN :inicio AND :fin', { inicio: inicioDia, fin: finDia })
+        .andWhere('ticket.actualizado_en BETWEEN :inicio AND :fin', {
+          inicio: inicioDia,
+          fin: finDia,
+        })
         .getMany();
 
       const ticketsResueltos = await this.ticketsRepository
         .createQueryBuilder('ticket')
         .where('ticket.estado = :estado', { estado: 'resuelto' })
-        .andWhere('ticket.actualizado_en BETWEEN :inicio AND :fin', { inicio: inicioDia, fin: finDia })
+        .andWhere('ticket.actualizado_en BETWEEN :inicio AND :fin', {
+          inicio: inicioDia,
+          fin: finDia,
+        })
         .getMany();
 
-      const diaLabel = inicioDia.toLocaleDateString('es-ES', { weekday: 'short' });
+      const diaLabel = inicioDia.toLocaleDateString('es-ES', {
+        weekday: 'short',
+      });
 
       resultado.push({
         fecha: diaLabel,

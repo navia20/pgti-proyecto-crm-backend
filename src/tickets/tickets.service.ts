@@ -1,10 +1,17 @@
-import { Injectable, BadRequestException, Logger, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  BadRequestException,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { TicketEntity, TicketPriority } from './entities/ticket.entity';
 import { CreateTicketDto } from './dtos/create-ticket.dto';
-import { CreateTicketExternoDto, TicketSourceEnum } from './dtos/create-ticket-externo.dto';
-import { TicketPriorityEnum } from './dtos/create-ticket.dto';
+import {
+  CreateTicketExternoDto,
+  TicketSourceEnum,
+} from './dtos/create-ticket-externo.dto';
 import { UpdateTicketDto } from './dtos/update-ticket.dto';
 import { TicketDto } from './dtos/ticket.dto';
 // import { AnalyticsService } from '../analytics/analytics.service';
@@ -77,10 +84,15 @@ export class TicketsService {
 
       if (existing) {
         clienteId = existing.id;
-      } else if (dto.cliente_nombre && (dto.cliente_email || dto.cliente_telefono)) {
+      } else if (
+        dto.cliente_nombre &&
+        (dto.cliente_email || dto.cliente_telefono)
+      ) {
         const nuevoCliente = await this.clientesService.create({
           nombre_completo: dto.cliente_nombre,
-          email: dto.cliente_email || `${dto.cliente_nombre.toLowerCase().replace(/\s/g, '.')}@temp.local`,
+          email:
+            dto.cliente_email ||
+            `${dto.cliente_nombre.toLowerCase().replace(/\s/g, '.')}@temp.local`,
           telefono: dto.cliente_telefono,
         });
         clienteId = nuevoCliente.id;
@@ -203,9 +215,12 @@ export class TicketsService {
       }
     }
 
-    const sortField = ordenar === 'fecha_vencimiento_sla' ? 'ticket.fecha_vencimiento_sla'
-      : ordenar === 'prioridad' ? 'ticket.prioridad'
-      : 'ticket.creado_en';
+    const sortField =
+      ordenar === 'fecha_vencimiento_sla'
+        ? 'ticket.fecha_vencimiento_sla'
+        : ordenar === 'prioridad'
+          ? 'ticket.prioridad'
+          : 'ticket.creado_en';
     const sortDir = direccion === 'ASC' ? 'ASC' : 'DESC';
 
     const [tickets, total] = await query
@@ -217,7 +232,9 @@ export class TicketsService {
     const clienteNames = await this.getClientNames(tickets);
 
     return {
-      data: tickets.map((t) => this.mapToDto(t, clienteNames.get(t.cliente_id))),
+      data: tickets.map((t) =>
+        this.mapToDto(t, clienteNames.get(t.cliente_id)),
+      ),
       total,
     };
   }
@@ -236,7 +253,10 @@ export class TicketsService {
       ? await this.getClientNames([ticket])
       : new Map();
 
-    return this.mapToDto(ticket, clienteNames.get(ticket.cliente_id));
+    return this.mapToDto(
+      ticket,
+      clienteNames.get(ticket.cliente_id) as string | undefined,
+    );
   }
 
   async findByClientId(clienteId: number): Promise<TicketDto[]> {
@@ -259,9 +279,6 @@ export class TicketsService {
     if (!ticket) {
       throw new NotFoundException(`Ticket ${id} no encontrado`);
     }
-
-    const previousAgenteId = ticket.agente_id;
-    const previousEstado = ticket.estado;
 
     if (updateTicketDto.prioridad) {
       updateTicketDto['fecha_vencimiento_sla'] = this.calculateSlaExpiration(
@@ -389,8 +406,12 @@ export class TicketsService {
   //   }
   // }
 
-  private async getClientNames(tickets: TicketEntity[]): Promise<Map<number, string>> {
-    const clienteIds = [...new Set(tickets.map(t => t.cliente_id).filter(Boolean))] as number[];
+  private async getClientNames(
+    tickets: TicketEntity[],
+  ): Promise<Map<number, string>> {
+    const clienteIds = [
+      ...new Set(tickets.map((t) => t.cliente_id).filter(Boolean)),
+    ] as number[];
     const names = new Map<number, string>();
 
     if (clienteIds.length === 0) return names;

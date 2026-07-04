@@ -6,12 +6,6 @@ import { CreateInteraccionDto } from './dtos/create-interaccion.dto';
 import { InteraccionDto } from './dtos/interaccion.dto';
 // import { AnalyticsService } from '../analytics/analytics.service';
 
-const AUTOR_TIPO_MAP: Record<string, string> = {
-  cliente: 'Cliente',
-  agente: 'Agente',
-  sistema: 'Sistema',
-};
-
 @Injectable()
 export class InteraccionesService {
   constructor(
