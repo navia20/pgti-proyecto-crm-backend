@@ -35,11 +35,11 @@ async function bootstrap(): Promise<Handler> {
   return serverlessExpress({ app: expressApp }) as Handler;
 }
 
-export const handler: Handler = async (
+export default async function handler(
   event: Record<string, unknown>,
   context: Context,
   callback: Callback,
-) => {
+): Promise<Record<string, unknown>> {
   server = server ?? (await bootstrap());
   return server(event, context, callback) as Promise<Record<string, unknown>>;
-};
+}
