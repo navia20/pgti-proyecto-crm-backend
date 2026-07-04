@@ -97,6 +97,7 @@ export class TicketsController {
       this.getApiKey('pedidos'),
       this.getApiKey('suscripciones'),
       this.getApiKey('salud'),
+      this.getApiKey('pagos'),
     ];
 
     if (!validKeys.includes(apiKey)) {
@@ -115,6 +116,10 @@ export class TicketsController {
           canal: ticket.canal,
           cliente_nombre: ticket.cliente_nombre,
           resolucion: ticket.resolucion,
+          pedido_id_ref: ticket.pedido_id_ref,
+          suscripcion_id_ref: ticket.suscripcion_id_ref,
+          pago_id_ref: ticket.pago_id_ref,
+          salud_ref: ticket.salud_ref,
           fecha_vencimiento_sla: ticket.fecha_vencimiento_sla,
           creado_en: ticket.creado_en,
           actualizado_en: ticket.actualizado_en,

@@ -10,6 +10,7 @@ export class TicketDto {
   fecha_vencimiento_sla!: Date;
   pedido_id_ref?: string;
   suscripcion_id_ref?: string;
+  pago_id_ref?: string;
   salud_ref?: string;
   creado_en!: Date;
   actualizado_en!: Date;

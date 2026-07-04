@@ -212,10 +212,14 @@ export class TicketsService {
         case 'salud':
           query.andWhere('ticket.salud_ref IS NOT NULL');
           break;
+        case 'pago':
+          query.andWhere('ticket.pago_id_ref IS NOT NULL');
+          break;
         case 'ninguna':
           query.andWhere('ticket.pedido_id_ref IS NULL');
           query.andWhere('ticket.suscripcion_id_ref IS NULL');
           query.andWhere('ticket.salud_ref IS NULL');
+          query.andWhere('ticket.pago_id_ref IS NULL');
           break;
       }
     }
@@ -446,6 +450,7 @@ export class TicketsService {
       fecha_vencimiento_sla: ticket.fecha_vencimiento_sla,
       pedido_id_ref: ticket.pedido_id_ref,
       suscripcion_id_ref: ticket.suscripcion_id_ref,
+      pago_id_ref: ticket.pago_id_ref,
       salud_ref: ticket.salud_ref,
       resolucion: ticket.resolucion,
       creado_en: ticket.creado_en,
