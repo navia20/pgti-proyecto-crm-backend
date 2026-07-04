@@ -86,10 +86,7 @@ export class TicketsController {
   }
 
   @Get('externo/:id')
-  async findExterno(
-    @Param('id') id: string,
-    @Query('api_key') apiKey: string,
-  ) {
+  async findExterno(@Param('id') id: string, @Query('api_key') apiKey: string) {
     if (!apiKey) {
       return { ok: false, message: 'api_key es requerida' };
     }

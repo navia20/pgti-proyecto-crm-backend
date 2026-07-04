@@ -1,7 +1,6 @@
 import {
   Injectable,
   NotFoundException,
-  BadRequestException,
   GoneException,
   Logger,
 } from '@nestjs/common';
@@ -28,8 +27,11 @@ export class EnlacesService {
     private readonly clientesService: ClientesService,
   ) {}
 
-  async crear(ticketId: string, dto: CrearEnlaceDto): Promise<{ token: string; url: string }> {
-    const ticket = await this.ticketsService.findById(ticketId);
+  async crear(
+    ticketId: string,
+    dto: CrearEnlaceDto,
+  ): Promise<{ token: string; url: string }> {
+    await this.ticketsService.findById(ticketId);
 
     const token = randomUUID();
     const expiraEn = new Date();
@@ -45,9 +47,7 @@ export class EnlacesService {
 
     await this.enlaceRepository.save(enlace);
 
-    this.logger.log(
-      `Enlace creado para ticket ${ticketId}: ${token}`,
-    );
+    this.logger.log(`Enlace creado para ticket ${ticketId}: ${token}`);
 
     return {
       token,
@@ -77,9 +77,13 @@ export class EnlacesService {
     let cliente_nombre = `Cliente ${enlace.ticket.cliente_id}`;
     if (enlace.ticket.cliente_id) {
       try {
-        const cliente = await this.clientesService.findOne(enlace.ticket.cliente_id);
+        const cliente = await this.clientesService.findOne(
+          enlace.ticket.cliente_id,
+        );
         cliente_nombre = cliente.nombre_completo;
-      } catch {}
+      } catch {
+        // Cliente no encontrado, usar nombre por defecto
+      }
     }
 
     return {
@@ -97,10 +101,7 @@ export class EnlacesService {
     };
   }
 
-  async responder(
-    token: string,
-    dto: ResponderEnlaceDto,
-  ) {
+  async responder(token: string, dto: ResponderEnlaceDto) {
     const enlace = await this.enlaceRepository.findOne({
       where: { token, activo: true },
     });

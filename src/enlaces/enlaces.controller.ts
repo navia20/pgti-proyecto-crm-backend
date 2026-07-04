@@ -1,11 +1,4 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Param,
-  Body,
-  HttpCode,
-} from '@nestjs/common';
+import { Controller, Get, Post, Param, Body, HttpCode } from '@nestjs/common';
 import { EnlacesService } from './enlaces.service';
 import { CrearEnlaceDto } from './dtos/crear-enlace.dto';
 import { ResponderEnlaceDto } from './dtos/responder-enlace.dto';
