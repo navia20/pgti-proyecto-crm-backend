@@ -1,14 +1,19 @@
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
+import { ExpressAdapter } from '@nestjs/platform-express';
 import serverlessExpress from '@vendia/serverless-express';
 import { Callback, Context, Handler } from 'aws-lambda';
-import { Express } from 'express';
+import express from 'express';
 import { AppModule } from './app.module';
 
 let server: Handler;
 
 async function bootstrap(): Promise<Handler> {
-  const app = await NestFactory.create(AppModule);
+  const expressApp = express();
+  const app = await NestFactory.create(
+    AppModule,
+    new ExpressAdapter(expressApp),
+  );
 
   const allowedOrigins = [
     process.env.FRONTEND_URL,
@@ -27,7 +32,6 @@ async function bootstrap(): Promise<Handler> {
 
   await app.init();
 
-  const expressApp = app.getHttpAdapter().getInstance() as Express;
   return serverlessExpress({ app: expressApp }) as Handler;
 }
 
