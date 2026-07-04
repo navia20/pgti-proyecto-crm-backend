@@ -26,7 +26,7 @@ export class UpdateTicketDto {
   canal?: TicketChannelEnum;
 
   @IsOptional()
-  @IsUUID()
+  @IsString()
   agente_id?: string;
 
   @IsOptional()

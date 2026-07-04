@@ -44,7 +44,7 @@ export class TicketEntity {
   @Column('integer', { nullable: true })
   cliente_id: number;
 
-  @Column({ type: 'uuid', nullable: true })
+  @Column({ type: 'varchar', nullable: true })
   agente_id: string;
 
   @Column({ type: 'timestamp' })
