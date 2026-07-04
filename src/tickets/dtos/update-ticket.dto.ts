@@ -44,4 +44,8 @@ export class UpdateTicketDto {
   @IsOptional()
   @IsString()
   salud_ref?: string;
+
+  @IsOptional()
+  @IsString()
+  resolucion?: string;
 }

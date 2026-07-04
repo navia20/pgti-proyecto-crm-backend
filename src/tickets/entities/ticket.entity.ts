@@ -71,6 +71,9 @@ export class TicketEntity {
   @Column({ type: 'varchar', nullable: true })
   sistema_id: string;
 
+  @Column({ type: 'text', nullable: true })
+  resolucion: string;
+
   // Relaciones
   @OneToMany(() => InteraccionEntity, (interaccion) => interaccion.ticket, {
     cascade: true,

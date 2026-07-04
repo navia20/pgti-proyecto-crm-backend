@@ -3,10 +3,11 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { InteraccionEntity } from './entities/interaccion.entity';
 import { InteraccionesService } from './interacciones.service';
 import { InteraccionesController } from './interacciones.controller';
+import { TicketEntity } from '../tickets/entities/ticket.entity';
 // import { AnalyticsModule } from '../analytics/analytics.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([InteraccionEntity])],
+  imports: [TypeOrmModule.forFeature([InteraccionEntity, TicketEntity])],
   providers: [InteraccionesService],
   controllers: [InteraccionesController],
   exports: [InteraccionesService],

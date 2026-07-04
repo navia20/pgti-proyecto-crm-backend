@@ -171,6 +171,7 @@ export class TicketsService {
     canal?: string,
     search?: string,
     referencia?: string,
+    agente_id?: string,
     ordenar?: string,
     direccion?: string,
   ): Promise<{ data: TicketDto[]; total: number }> {
@@ -194,6 +195,10 @@ export class TicketsService {
 
     if (search) {
       query.andWhere('ticket.asunto ILIKE :search', { search: `%${search}%` });
+    }
+
+    if (agente_id) {
+      query.andWhere('ticket.agente_id = :agente_id', { agente_id });
     }
 
     if (referencia) {
@@ -441,6 +446,8 @@ export class TicketsService {
       fecha_vencimiento_sla: ticket.fecha_vencimiento_sla,
       pedido_id_ref: ticket.pedido_id_ref,
       suscripcion_id_ref: ticket.suscripcion_id_ref,
+      salud_ref: ticket.salud_ref,
+      resolucion: ticket.resolucion,
       creado_en: ticket.creado_en,
       actualizado_en: ticket.actualizado_en,
     };

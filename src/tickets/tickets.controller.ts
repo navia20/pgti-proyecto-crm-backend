@@ -58,6 +58,7 @@ export class TicketsController {
     @Query('canal') canal?: string,
     @Query('search') search?: string,
     @Query('referencia') referencia?: string,
+    @Query('agente_id') agente_id?: string,
     @Query('ordenar') ordenar?: string,
     @Query('direccion') direccion?: string,
   ) {
@@ -70,6 +71,7 @@ export class TicketsController {
       canal,
       search,
       referencia,
+      agente_id,
       ordenar,
       direccion,
     );
@@ -112,6 +114,7 @@ export class TicketsController {
           prioridad: ticket.prioridad,
           canal: ticket.canal,
           cliente_nombre: ticket.cliente_nombre,
+          resolucion: ticket.resolucion,
           fecha_vencimiento_sla: ticket.fecha_vencimiento_sla,
           creado_en: ticket.creado_en,
           actualizado_en: ticket.actualizado_en,

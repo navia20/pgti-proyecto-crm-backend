@@ -94,6 +94,7 @@ export class EnlacesService {
         prioridad: enlace.ticket.prioridad,
         canal: enlace.ticket.canal,
         cliente_nombre,
+        resolucion: enlace.ticket.resolucion,
         creado_en: enlace.ticket.creado_en,
       },
       interacciones,
