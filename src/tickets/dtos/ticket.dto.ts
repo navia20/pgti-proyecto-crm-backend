@@ -5,6 +5,7 @@ export class TicketDto {
   prioridad!: string;
   canal!: string;
   cliente_id?: number;
+  cliente_nombre?: string;
   agente_id?: string;
   fecha_vencimiento_sla!: Date;
   pedido_id_ref?: string;

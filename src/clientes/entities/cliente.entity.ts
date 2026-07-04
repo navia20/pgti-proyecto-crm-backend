@@ -56,6 +56,9 @@ export class ClienteEntity {
   @Column({ type: 'timestamp', nullable: true })
   fusionado_en: Date;
 
+  @Column({ type: 'timestamp', nullable: true })
+  eliminado_en: Date;
+
   @CreateDateColumn()
   creado_en: Date;
 

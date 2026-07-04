@@ -15,6 +15,7 @@ export class ClienteDto {
   es_duplicado!: boolean;
   fusionado_en_id?: number;
   fusionado_en?: Date;
+  eliminado_en?: Date;
   creado_en!: Date;
   actualizado_en!: Date;
 }

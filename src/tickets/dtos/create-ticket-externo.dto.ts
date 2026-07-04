@@ -50,4 +50,16 @@ export class CreateTicketExternoDto {
   @IsOptional()
   @IsString()
   contexto?: string;
+
+  @IsOptional()
+  @IsString()
+  cliente_nombre?: string;
+
+  @IsOptional()
+  @IsString()
+  cliente_email?: string;
+
+  @IsOptional()
+  @IsString()
+  cliente_telefono?: string;
 }

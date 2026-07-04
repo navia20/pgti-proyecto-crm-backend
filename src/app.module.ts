@@ -9,7 +9,8 @@ import { TicketArticulosModule } from './ticket-articulos/ticket-articulos.modul
 import { EventosModule } from './eventos/eventos.module';
 import { ReportesModule } from './reportes/reportes.module';
 import { EventosSalientesModule } from './eventos-salientes/eventos-salientes.module';
-import { AnalyticsModule } from './analytics/analytics.module';
+// import { AnalyticsModule } from './analytics/analytics.module';
+import { EnlacesModule } from './enlaces/enlaces.module';
 
 @Module({
   imports: [
@@ -44,7 +45,8 @@ import { AnalyticsModule } from './analytics/analytics.module';
     EventosModule,
     ReportesModule,
     EventosSalientesModule,
-    AnalyticsModule,
+    // AnalyticsModule,
+    EnlacesModule,
   ],
 })
 export class AppModule {}
