@@ -97,6 +97,7 @@ Nest is an MIT-licensed open source project. It can grow thanks to the sponsors 
 
 Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
 
+
 ```
 pgti-proyecto-crm-backend
 ├─ .eslintrc.js
@@ -109,6 +110,11 @@ pgti-proyecto-crm-backend
 ├─ package.json
 ├─ README.md
 ├─ src
+│  ├─ analytics
+│  │  ├─ analytics.module.ts
+│  │  ├─ analytics.service.ts
+│  │  └─ dtos
+│  │     └─ analytics-event.dto.ts
 │  ├─ app.controller.spec.ts
 │  ├─ app.controller.ts
 │  ├─ app.module.ts
@@ -136,6 +142,13 @@ pgti-proyecto-crm-backend
 │  │  │  └─ update-cliente.dto.ts
 │  │  └─ entities
 │  │     └─ cliente.entity.ts
+│  ├─ enlaces
+│  │  ├─ dtos
+│  │  │  ├─ crear-enlace.dto.ts
+│  │  │  └─ responder-enlace.dto.ts
+│  │  ├─ enlaces.controller.ts
+│  │  ├─ enlaces.module.ts
+│  │  └─ enlaces.service.ts
 │  ├─ eventos
 │  │  ├─ dtos
 │  │  │  └─ evento-interno.dto.ts
@@ -152,6 +165,9 @@ pgti-proyecto-crm-backend
 │  │  ├─ eventos-salientes.controller.ts
 │  │  ├─ eventos-salientes.module.ts
 │  │  └─ eventos-salientes.service.ts
+│  ├─ incidentes
+│  │  ├─ incidentes.module.ts
+│  │  └─ incidentes.service.ts
 │  ├─ interacciones
 │  │  ├─ dtos
 │  │  │  ├─ create-interaccion.dto.ts
@@ -161,6 +177,7 @@ pgti-proyecto-crm-backend
 │  │  ├─ interacciones.controller.ts
 │  │  ├─ interacciones.module.ts
 │  │  └─ interacciones.service.ts
+│  ├─ main.serverless.ts
 │  ├─ main.ts
 │  ├─ reportes
 │  │  ├─ dtos
@@ -181,13 +198,134 @@ pgti-proyecto-crm-backend
 │  │  └─ ticket-articulos.service.ts
 │  └─ tickets
 │     ├─ dtos
+│     │  ├─ create-ticket-externo.dto.ts
 │     │  ├─ create-ticket.dto.ts
 │     │  ├─ ticket.dto.ts
 │     │  └─ update-ticket.dto.ts
 │     ├─ entities
+│     │  ├─ ticket-enlace.entity.ts
 │     │  └─ ticket.entity.ts
 │     ├─ tickets.controller.ts
 │     ├─ tickets.module.ts
+│     └─ tickets.service.ts
+├─ test
+│  ├─ app.e2e-spec.ts
+│  └─ jest-e2e.json
+├─ tsconfig.build.json
+├─ tsconfig.json
+└─ vercel.json
+
+```
+```
+pgti-proyecto-crm-backend
+├─ .eslintrc.js
+├─ .prettierrc
+├─ docker-compose.yml
+├─ dockerfile
+├─ eslint.config.mjs
+├─ nest-cli.json
+├─ package-lock.json
+├─ package.json
+├─ README.md
+├─ src
+│  ├─ analytics
+│  │  ├─ analytics.module.ts
+│  │  ├─ analytics.service.ts
+│  │  └─ dtos
+│  │     └─ analytics-event.dto.ts
+│  ├─ app.controller.spec.ts
+│  ├─ app.controller.ts
+│  ├─ app.module.ts
+│  ├─ app.service.ts
+│  ├─ articulos-kb
+│  │  ├─ articulos-kb.controller.ts
+│  │  ├─ articulos-kb.module.ts
+│  │  ├─ articulos-kb.service.ts
+│  │  ├─ dtos
+│  │  │  ├─ articulo-kb.dto.ts
+│  │  │  ├─ create-articulo-kb.dto.ts
+│  │  │  └─ update-articulo-kb.dto.ts
+│  │  └─ entities
+│  │     └─ articulo-kb.entity.ts
+│  ├─ clientes
+│  │  ├─ clientes.controller.ts
+│  │  ├─ clientes.module.ts
+│  │  ├─ clientes.service.ts
+│  │  ├─ dtos
+│  │  │  ├─ cliente.dto.ts
+│  │  │  ├─ compare-clientes.dto.ts
+│  │  │  ├─ create-cliente.dto.ts
+│  │  │  ├─ duplicate-group.dto.ts
+│  │  │  ├─ merge-clientes.dto.ts
+│  │  │  └─ update-cliente.dto.ts
+│  │  └─ entities
+│  │     └─ cliente.entity.ts
+│  ├─ enlaces
+│  │  ├─ dtos
+│  │  │  ├─ crear-enlace.dto.ts
+│  │  │  └─ responder-enlace.dto.ts
+│  │  ├─ enlaces.controller.ts
+│  │  ├─ enlaces.module.ts
+│  │  └─ enlaces.service.ts
+│  ├─ eventos
+│  │  ├─ dtos
+│  │  │  └─ evento-interno.dto.ts
+│  │  ├─ entities
+│  │  │  └─ evento-interno.entity.ts
+│  │  ├─ eventos.controller.ts
+│  │  ├─ eventos.module.ts
+│  │  └─ eventos.service.ts
+│  ├─ eventos-salientes
+│  │  ├─ dtos
+│  │  │  └─ evento-saliente.dto.ts
+│  │  ├─ entities
+│  │  │  └─ evento-saliente.entity.ts
+│  │  ├─ eventos-salientes.controller.ts
+│  │  ├─ eventos-salientes.module.ts
+│  │  └─ eventos-salientes.service.ts
+│  ├─ incidentes
+│  │  ├─ incidentes.module.ts
+│  │  └─ incidentes.service.ts
+│  ├─ interacciones
+│  │  ├─ dtos
+│  │  │  ├─ create-interaccion.dto.ts
+│  │  │  └─ interaccion.dto.ts
+│  │  ├─ entities
+│  │  │  └─ interaccion.entity.ts
+│  │  ├─ interacciones.controller.ts
+│  │  ├─ interacciones.module.ts
+│  │  └─ interacciones.service.ts
+│  ├─ main.serverless.ts
+│  ├─ main.ts
+│  ├─ reportes
+│  │  ├─ dtos
+│  │  │  └─ reporte.dto.ts
+│  │  ├─ reportes.controller.ts
+│  │  ├─ reportes.module.ts
+│  │  └─ reportes.service.ts
+│  ├─ services
+│  │  └─ ticket.service.ts
+│  ├─ ticket-articulos
+│  │  ├─ dtos
+│  │  │  ├─ create-ticket-articulo.dto.ts
+│  │  │  └─ ticket-articulo.dto.ts
+│  │  ├─ entities
+│  │  │  └─ ticket-articulo.entity.ts
+│  │  ├─ ticket-articulos.controller.ts
+│  │  ├─ ticket-articulos.module.ts
+│  │  └─ ticket-articulos.service.ts
+│  └─ tickets
+│     ├─ dtos
+│     │  ├─ create-ticket-externo.dto.ts
+│     │  ├─ create-ticket.dto.ts
+│     │  ├─ ticket.dto.ts
+│     │  └─ update-ticket.dto.ts
+│     ├─ entities
+│     │  ├─ ticket-enlace.entity.ts
+│     │  └─ ticket.entity.ts
+│     ├─ tickets.controller.ts
+│     ├─ tickets.module.ts
+│     ├─ tickets.service.spec.ts
 │     └─ tickets.service.ts
 ├─ test
 │  ├─ app.e2e-spec.ts
