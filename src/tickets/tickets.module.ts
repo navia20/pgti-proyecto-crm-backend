@@ -1,10 +1,10 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { TicketEntity } from './entities/ticket.entity';
 import { TicketsService } from './tickets.service';
 import { TicketsController } from './tickets.controller';
 // import { AnalyticsModule } from '../analytics/analytics.module';
-// import { IncidentesModule } from '../incidentes/incidentes.module';
+import { IncidentesModule } from '../incidentes/incidentes.module';
 import { ClientesModule } from '../clientes/clientes.module';
 import { InteraccionesModule } from '../interacciones/interacciones.module';
 import { NotificacionesModule } from '../notificaciones/notificaciones.module';
@@ -13,7 +13,7 @@ import { NotificacionesModule } from '../notificaciones/notificaciones.module';
   imports: [
     TypeOrmModule.forFeature([TicketEntity]),
     // AnalyticsModule,
-    // IncidentesModule,
+    forwardRef(() => IncidentesModule),
     ClientesModule,
     InteraccionesModule,
     NotificacionesModule,

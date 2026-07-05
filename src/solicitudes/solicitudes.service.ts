@@ -97,14 +97,15 @@ export class SolicitudesService {
       });
     }
 
+    const contenidoInteraccion = dto.descripcion || solicitud.descripcion;
+
     const ticket = await this.ticketsService.create({
       asunto: dto.asunto || solicitud.asunto,
       canal: (dto.canal || 'email') as TicketChannelEnum,
       prioridad: (dto.prioridad || 'media') as TicketPriorityEnum,
       cliente_id: cliente.id,
+      descripcion: contenidoInteraccion || undefined,
     });
-
-    const contenidoInteraccion = dto.descripcion || solicitud.descripcion;
 
     if (contenidoInteraccion) {
       await this.interaccionesService.create({

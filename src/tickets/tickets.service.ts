@@ -7,7 +7,7 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { TicketEntity, TicketPriority } from './entities/ticket.entity';
-import { CreateTicketDto } from './dtos/create-ticket.dto';
+import { CreateTicketDto, TicketPriorityEnum } from './dtos/create-ticket.dto';
 import {
   CreateTicketExternoDto,
   TicketSourceEnum,
@@ -15,7 +15,7 @@ import {
 import { UpdateTicketDto } from './dtos/update-ticket.dto';
 import { TicketDto } from './dtos/ticket.dto';
 // import { AnalyticsService } from '../analytics/analytics.service';
-// import { IncidentesService } from '../incidentes/incidentes.service';
+import { IncidentesService } from '../incidentes/incidentes.service';
 import { ClientesService } from '../clientes/clientes.service';
 import { InteraccionesService } from '../interacciones/interacciones.service';
 import { AuthorTypeEnum } from '../interacciones/dtos/create-interaccion.dto';
@@ -29,7 +29,7 @@ export class TicketsService {
     @InjectRepository(TicketEntity)
     private ticketRepository: Repository<TicketEntity>,
     // private readonly analyticsService: AnalyticsService,
-    // private readonly incidentesService: IncidentesService,
+    private readonly incidentesService: IncidentesService,
     private readonly clientesService: ClientesService,
     private readonly interaccionesService: InteraccionesService,
     private readonly notificacionesService: NotificacionesService,
@@ -65,6 +65,13 @@ export class TicketsService {
 
     if (savedTicket.cliente_id) {
       this.enviarNotificacionCreacion(savedTicket).catch(() => {});
+    }
+
+    if (createTicketDto.prioridad === TicketPriorityEnum.CRITICA) {
+      const dtoMapped = this.mapToDto(savedTicket);
+      this.incidentesService
+        .enviarAlerta(dtoMapped, createTicketDto.descripcion)
+        .catch(() => {});
     }
 
     return this.mapToDto(savedTicket);
@@ -151,12 +158,12 @@ export class TicketsService {
         .catch(() => {});
     }
 
-    // if (dto.prioridad === TicketPriorityEnum.CRITICA) {
-    //   const dtoMapped = this.mapToDto(savedTicket);
-    //   this.incidentesService
-    //     .enviarAlerta(dtoMapped, dto.descripcion)
-    //     .catch(() => {});
-    // }
+    if (dto.prioridad === TicketPriorityEnum.CRITICA) {
+      const dtoMapped = this.mapToDto(savedTicket);
+      this.incidentesService
+        .enviarAlerta(dtoMapped, dto.descripcion)
+        .catch(() => {});
+    }
 
     return this.mapToDto(savedTicket);
   }
@@ -317,6 +324,23 @@ export class TicketsService {
     if (result.affected === 0) {
       throw new NotFoundException(`Ticket ${id} no encontrado`);
     }
+  }
+
+  async obtenerEstadoTicket(ticketId: string): Promise<TicketDto | null> {
+    const ticket = await this.ticketRepository.findOne({
+      where: { id: ticketId },
+      relations: ['interacciones', 'articulos'],
+    });
+
+    if (!ticket) {
+      return null;
+    }
+
+    const clienteNames = ticket.cliente_id
+      ? await this.getClientNames([ticket])
+      : new Map();
+
+    return this.mapToDto(ticket, clienteNames.get(ticket.cliente_id));
   }
 
   async getTicketsBySlaStatus(): Promise<{

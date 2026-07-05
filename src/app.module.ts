@@ -11,7 +11,8 @@ import { TicketArticulosModule } from './ticket-articulos/ticket-articulos.modul
 import { EventosModule } from './eventos/eventos.module';
 import { ReportesModule } from './reportes/reportes.module';
 import { EventosSalientesModule } from './eventos-salientes/eventos-salientes.module';
-// import { AnalyticsModule } from './analytics/analytics.module';
+import { AnalyticsModule } from './analytics/analytics.module';
+import { IncidentesModule } from './incidentes/incidentes.module';
 import { EnlacesModule } from './enlaces/enlaces.module';
 import { NotificacionesModule } from './notificaciones/notificaciones.module';
 import { SolicitudesModule } from './solicitudes/solicitudes.module';
@@ -56,7 +57,8 @@ import { SolicitudesModule } from './solicitudes/solicitudes.module';
     EventosModule,
     ReportesModule,
     EventosSalientesModule,
-    // AnalyticsModule,
+    AnalyticsModule,
+    IncidentesModule,
     EnlacesModule,
     NotificacionesModule,
     SolicitudesModule,
