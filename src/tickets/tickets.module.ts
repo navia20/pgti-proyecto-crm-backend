@@ -7,6 +7,7 @@ import { TicketsController } from './tickets.controller';
 // import { IncidentesModule } from '../incidentes/incidentes.module';
 import { ClientesModule } from '../clientes/clientes.module';
 import { InteraccionesModule } from '../interacciones/interacciones.module';
+import { NotificacionesModule } from '../notificaciones/notificaciones.module';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { InteraccionesModule } from '../interacciones/interacciones.module';
     // IncidentesModule,
     ClientesModule,
     InteraccionesModule,
+    NotificacionesModule,
   ],
   providers: [TicketsService],
   controllers: [TicketsController],

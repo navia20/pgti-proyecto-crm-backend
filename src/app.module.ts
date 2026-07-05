@@ -11,6 +11,7 @@ import { ReportesModule } from './reportes/reportes.module';
 import { EventosSalientesModule } from './eventos-salientes/eventos-salientes.module';
 // import { AnalyticsModule } from './analytics/analytics.module';
 import { EnlacesModule } from './enlaces/enlaces.module';
+import { NotificacionesModule } from './notificaciones/notificaciones.module';
 
 @Module({
   imports: [
@@ -47,6 +48,7 @@ import { EnlacesModule } from './enlaces/enlaces.module';
     EventosSalientesModule,
     // AnalyticsModule,
     EnlacesModule,
+    NotificacionesModule,
   ],
 })
 export class AppModule {}
