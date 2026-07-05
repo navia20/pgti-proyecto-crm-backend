@@ -74,6 +74,9 @@ export class TicketEntity {
   @Column({ type: 'text', nullable: true })
   resolucion: string;
 
+  @Column({ type: 'boolean', default: false })
+  sla_warned: boolean;
+
   // Relaciones
   @OneToMany(() => InteraccionEntity, (interaccion) => interaccion.ticket, {
     cascade: true,

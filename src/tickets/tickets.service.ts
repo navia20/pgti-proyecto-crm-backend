@@ -72,6 +72,18 @@ export class TicketsService {
       this.incidentesService
         .enviarAlerta(dtoMapped, createTicketDto.descripcion)
         .catch(() => {});
+      this.notificacionesService
+        .notificarTicketCriticoAdmin(
+          savedTicket.id,
+          savedTicket.asunto,
+          savedTicket.prioridad,
+          savedTicket.canal,
+          'Creado internamente',
+          undefined,
+          savedTicket.fecha_vencimiento_sla,
+          savedTicket.creado_en,
+        )
+        .catch(() => {});
     }
 
     return this.mapToDto(savedTicket);
@@ -162,6 +174,18 @@ export class TicketsService {
       const dtoMapped = this.mapToDto(savedTicket);
       this.incidentesService
         .enviarAlerta(dtoMapped, dto.descripcion)
+        .catch(() => {});
+      this.notificacionesService
+        .notificarTicketCriticoAdmin(
+          savedTicket.id,
+          savedTicket.asunto,
+          savedTicket.prioridad,
+          savedTicket.canal,
+          `Creado desde ${dto.sistema_origen}`,
+          undefined,
+          savedTicket.fecha_vencimiento_sla,
+          savedTicket.creado_en,
+        )
         .catch(() => {});
     }
 
@@ -296,6 +320,7 @@ export class TicketsService {
     }
 
     const previousEstado = ticket.estado;
+    const previousAgenteId = ticket.agente_id;
 
     if (updateTicketDto.prioridad) {
       updateTicketDto['fecha_vencimiento_sla'] = this.calculateSlaExpiration(
@@ -313,6 +338,55 @@ export class TicketsService {
         updatedTicket.estado === 'cerrado')
     ) {
       this.enviarNotificacionCierre(updatedTicket).catch(() => {});
+
+      if (updatedTicket.prioridad === 'critica') {
+        this.notificacionesService
+          .notificarTicketCriticoResuelto(
+            updatedTicket.id,
+            updatedTicket.asunto,
+            updatedTicket.resolucion || 'Sin resolución especificada',
+            updatedTicket.agente_id || undefined,
+            updatedTicket.creado_en,
+          )
+          .catch(() => {});
+      }
+    }
+
+    if (
+      updateTicketDto.agente_id &&
+      updateTicketDto.agente_id !== previousAgenteId
+    ) {
+      this.notificacionesService
+        .notificarAsignacionAgente(
+          updatedTicket.id,
+          updatedTicket.asunto,
+          updateTicketDto.agente_id,
+          previousAgenteId || undefined,
+        )
+        .catch(() => {});
+    }
+
+    if (updatedTicket.prioridad === 'critica' && !ticket.sla_warned) {
+      const now = new Date();
+      const totalMs =
+        updatedTicket.fecha_vencimiento_sla.getTime() -
+        updatedTicket.creado_en.getTime();
+      const remainingMs =
+        updatedTicket.fecha_vencimiento_sla.getTime() - now.getTime();
+      const porcentajeRestante = (remainingMs / totalMs) * 100;
+
+      if (porcentajeRestante <= 25) {
+        ticket.sla_warned = true;
+        await this.ticketRepository.save(ticket);
+        this.notificacionesService
+          .notificarSlaWarning(
+            updatedTicket.id,
+            updatedTicket.asunto,
+            updatedTicket.prioridad,
+            porcentajeRestante,
+          )
+          .catch(() => {});
+      }
     }
 
     return this.mapToDto(updatedTicket);
