@@ -356,19 +356,29 @@ export class TicketsService {
     ticket: TicketEntity,
   ): Promise<void> {
     try {
+      this.logger.log(
+        `[Notificación] Preparando notificación de creación para ticket ${ticket.id}, canal=${ticket.canal}`,
+      );
       const cliente = await this.clientesService.findOne(ticket.cliente_id);
-      await this.notificacionesService.notificarTicketCreado(
+      this.logger.log(
+        `[Notificación] Cliente: ${cliente.nombre_completo}, email=${cliente.email}, telefono=${cliente.telefono}`,
+      );
+      const resultado = await this.notificacionesService.notificarTicketCreado(
         ticket.id,
         ticket.asunto,
         ticket.prioridad,
+        ticket.canal,
         cliente.email,
         cliente.telefono,
         cliente.nombre_completo,
       );
+      this.logger.log(
+        `[Notificación] Resultado notificación ticket ${ticket.id}: ${resultado}`,
+      );
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       this.logger.error(
-        `Error al enviar notificación de creación para ticket ${ticket.id}: ${message}`,
+        `[Notificación] Error al enviar notificación de creación para ticket ${ticket.id}: ${message}`,
       );
     }
   }
@@ -378,8 +388,9 @@ export class TicketsService {
       const cliente = await this.clientesService.findOne(ticket.cliente_id);
       await this.notificacionesService.notificarTicketCerrado(
         ticket.id,
-        ticket.asunto,
+        ticket.asunto || 'Sin asunto',
         ticket.resolucion || 'Sin resolución especificada',
+        ticket.canal,
         cliente.email,
         cliente.telefono,
         cliente.nombre_completo,

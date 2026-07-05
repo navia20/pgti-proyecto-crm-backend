@@ -83,97 +83,90 @@ export class NotificacionesService {
     ticketId: string,
     asunto: string,
     prioridad: string,
+    canal: string,
     clienteEmail?: string,
     clienteTelefono?: string,
     clienteNombre?: string,
   ): Promise<boolean> {
-    if (!clienteEmail && !clienteTelefono) return false;
-
     const nombre = clienteNombre || 'Cliente';
     const url = await this.generarUrlEnlace(ticketId);
-    const hasEmail = !!clienteEmail;
-    const hasSms = !!clienteTelefono;
+    const shortId = ticketId.substring(0, 8);
 
-    if (hasEmail) {
-      const payload: NotificacionPayload = {
-        channel: 'email',
-        recipient: {
-          email: clienteEmail,
-          ...(hasSms ? { telefono: clienteTelefono } : {}),
-        },
-        subject: `Ticket #${ticketId.substring(0, 8)} creado - ${asunto}`,
-        body: {
-          email: `<p>Hola <strong>${nombre}</strong>, se ha creado tu ticket.</p><p><strong>Asunto:</strong> ${asunto}</p><p><strong>Prioridad:</strong> ${prioridad}</p><p><a href="${url}">Haz clic aqu&iacute; para responder</a></p>`,
-          ...(hasSms
-            ? {
-                sms: `Tu ticket #${ticketId.substring(0, 8)} fue creado: ${asunto}. Responde: ${url}`,
-              }
-            : {}),
-        },
-      };
-      return this.enviar(payload);
-    }
+    if (!clienteEmail) return false;
 
-    if (hasSms) {
-      const payload: NotificacionPayload = {
-        channel: 'sms',
-        recipient: { telefono: clienteTelefono },
-        body: {
-          sms: `Tu ticket #${ticketId.substring(0, 8)} fue creado: ${asunto}. Responde: ${url}`,
-        },
-      };
-      return this.enviar(payload);
-    }
-
-    return false;
+    const payload: NotificacionPayload = {
+      channel: 'email',
+      recipient: { email: clienteEmail },
+      subject: `Ticket #${shortId} creado - ${asunto}`,
+      body: {
+        email: `
+<div style="font-family: Arial, sans-serif; max-width: 520px; margin: 0 auto; border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden;">
+  <div style="background: #2563eb; padding: 20px 24px;">
+    <h1 style="color: #fff; margin: 0; font-size: 18px;">Tu ticket ha sido creado</h1>
+  </div>
+  <div style="padding: 24px;">
+    <p style="color: #333; font-size: 15px; margin: 0 0 16px;">Hola <strong>${nombre}</strong>, recibimos tu solicitud y ya est&aacute; en nuestro sistema.</p>
+    <table style="width: 100%; border-collapse: collapse; margin: 16px 0;">
+      <tr>
+        <td style="padding: 10px 12px; background: #f9fafb; border-radius: 6px 0 0 6px; font-weight: bold; color: #555; font-size: 13px;">Ticket</td>
+        <td style="padding: 10px 12px; background: #f9fafb; border-radius: 0 6px 6px 0; color: #2563eb; font-size: 13px;">#${shortId}</td>
+      </tr>
+      <tr>
+        <td style="padding: 10px 12px; font-weight: bold; color: #555; font-size: 13px;">Asunto</td>
+        <td style="padding: 10px 12px; color: #333; font-size: 13px;">${asunto}</td>
+      </tr>
+    </table>
+    <a href="${url}" style="display: inline-block; background: #2563eb; color: #fff; text-decoration: none; padding: 12px 24px; border-radius: 6px; font-size: 14px; font-weight: bold; margin-top: 8px;">Entrar al chat</a>
+    <p style="color: #999; font-size: 12px; margin: 20px 0 0;">Este enlace vence en 7 d&iacute;as.</p>
+  </div>
+</div>`,
+      },
+    };
+    return this.enviar(payload);
   }
 
   async notificarTicketCerrado(
     ticketId: string,
     asunto: string,
     resolucion: string,
+    canal: string,
     clienteEmail?: string,
     clienteTelefono?: string,
     clienteNombre?: string,
   ): Promise<boolean> {
-    if (!clienteEmail && !clienteTelefono) return false;
-
     const nombre = clienteNombre || 'Cliente';
     const url = await this.generarUrlEnlace(ticketId);
-    const hasEmail = !!clienteEmail;
-    const hasSms = !!clienteTelefono;
+    const shortId = ticketId.substring(0, 8);
 
-    if (hasEmail) {
-      const payload: NotificacionPayload = {
-        channel: 'email',
-        recipient: {
-          email: clienteEmail,
-          ...(hasSms ? { telefono: clienteTelefono } : {}),
-        },
-        subject: `Tu ticket #${ticketId.substring(0, 8)} ha sido cerrado`,
-        body: {
-          email: `<p>Hola <strong>${nombre}</strong>, tu ticket ha sido cerrado.</p><p><strong>Resoluci&oacute;n:</strong> ${resolucion}</p><p>Si necesitas ayuda adicional, h&aacute;blanos desde el enlace de tu ticket.</p>`,
-          ...(hasSms
-            ? {
-                sms: `Tu ticket #${ticketId.substring(0, 8)} fue cerrado: ${resolucion}. Si necesitas m&aacute;s ayuda: ${url}`,
-              }
-            : {}),
-        },
-      };
-      return this.enviar(payload);
-    }
+    if (!clienteEmail) return false;
 
-    if (hasSms) {
-      const payload: NotificacionPayload = {
-        channel: 'sms',
-        recipient: { telefono: clienteTelefono },
-        body: {
-          sms: `Tu ticket #${ticketId.substring(0, 8)} fue cerrado: ${resolucion}. Si necesitas m&aacute;s ayuda: ${url}`,
-        },
-      };
-      return this.enviar(payload);
-    }
-
-    return false;
+    const payload: NotificacionPayload = {
+      channel: 'email',
+      recipient: { email: clienteEmail },
+      subject: `Tu ticket #${shortId} ha sido cerrado`,
+      body: {
+        email: `
+<div style="font-family: Arial, sans-serif; max-width: 520px; margin: 0 auto; border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden;">
+  <div style="background: #2563eb; padding: 20px 24px;">
+    <h1 style="color: #fff; margin: 0; font-size: 18px;">Ticket cerrado</h1>
+  </div>
+  <div style="padding: 24px;">
+    <p style="color: #333; font-size: 15px; margin: 0 0 16px;">Hola <strong>${nombre}</strong>, tu ticket ha sido resuelto y cerrado.</p>
+    <table style="width: 100%; border-collapse: collapse; margin: 16px 0;">
+      <tr>
+        <td style="padding: 10px 12px; background: #f9fafb; border-radius: 6px 0 0 6px; font-weight: bold; color: #555; font-size: 13px;">Ticket</td>
+        <td style="padding: 10px 12px; background: #f9fafb; border-radius: 0 6px 6px 0; color: #2563eb; font-size: 13px;">#${shortId}</td>
+      </tr>
+      <tr>
+        <td style="padding: 10px 12px; font-weight: bold; color: #555; font-size: 13px;">Resoluci&oacute;n</td>
+        <td style="padding: 10px 12px; background: #f9fafb; border-radius: 0 6px 6px 0; color: #333; font-size: 13px;">${resolucion}</td>
+      </tr>
+    </table>
+    <a href="${url}" style="display: inline-block; background: #2563eb; color: #fff; text-decoration: none; padding: 12px 24px; border-radius: 6px; font-size: 14px; font-weight: bold; margin-top: 8px;">Ver detalle</a>
+  </div>
+</div>`,
+      },
+    };
+    return this.enviar(payload);
   }
 }
