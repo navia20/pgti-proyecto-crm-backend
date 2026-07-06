@@ -296,7 +296,7 @@ export class TicketsService {
 
     return {
       data: tickets.map((t) =>
-        this.mapToDto(t, clienteNames.get(t.cliente_id)),
+        this.mapToDto(t, t.cliente_id ? clienteNames.get(t.cliente_id) : undefined),
       ),
       total,
     };
@@ -318,7 +318,7 @@ export class TicketsService {
 
     return this.mapToDto(
       ticket,
-      clienteNames.get(ticket.cliente_id) as string | undefined,
+      ticket.cliente_id ? clienteNames.get(ticket.cliente_id) : undefined,
     );
   }
 
@@ -330,7 +330,7 @@ export class TicketsService {
 
     const clienteNames = await this.getClientNames(tickets);
 
-    return tickets.map((t) => this.mapToDto(t, clienteNames.get(t.cliente_id)));
+    return tickets.map((t) => this.mapToDto(t, t.cliente_id ? clienteNames.get(t.cliente_id) : undefined));
   }
 
   async update(
@@ -438,7 +438,7 @@ export class TicketsService {
       ? await this.getClientNames([ticket])
       : new Map();
 
-    return this.mapToDto(ticket, clienteNames.get(ticket.cliente_id));
+    return this.mapToDto(ticket, ticket.cliente_id ? clienteNames.get(ticket.cliente_id) : undefined);
   }
 
   async getTicketsBySlaStatus(): Promise<{
@@ -478,6 +478,7 @@ export class TicketsService {
     ticket: TicketEntity,
   ): Promise<void> {
     try {
+      if (!ticket.cliente_id) return;
       this.logger.log(
         `[Notificación] Preparando notificación de creación para ticket ${ticket.id}, canal=${ticket.canal}`,
       );
@@ -507,6 +508,7 @@ export class TicketsService {
 
   private async enviarNotificacionCierre(ticket: TicketEntity): Promise<void> {
     try {
+      if (!ticket.cliente_id) return;
       const cliente = await this.clientesService.findOne(ticket.cliente_id);
       await this.notificacionesService.notificarTicketCerrado(
         ticket.id,
