@@ -72,6 +72,9 @@ export class TicketEntity {
   sistema_id: string;
 
   @Column({ type: 'text', nullable: true })
+  descripcion: string;
+
+  @Column({ type: 'text', nullable: true })
   resolucion: string;
 
   @Column({ type: 'boolean', default: false })

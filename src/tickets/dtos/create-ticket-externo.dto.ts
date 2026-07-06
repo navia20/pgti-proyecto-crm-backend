@@ -15,8 +15,7 @@ export class CreateTicketExternoDto {
   asunto: string;
 
   @IsString()
-  @IsOptional()
-  descripcion?: string;
+  descripcion: string;
 
   @IsEnum(TicketPriorityEnum)
   prioridad: TicketPriorityEnum;

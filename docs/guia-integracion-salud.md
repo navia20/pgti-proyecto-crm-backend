@@ -44,7 +44,7 @@ x-api-key: salud_secret_p01
 | Campo | Tipo | Obligatorio | Descripción |
 |---|---|---|---|
 | `asunto` | `string` | Sí | Motivo del ticket. |
-| `descripcion` | `string` | No | Detalle del problema. Se guarda como interacción. |
+| `descripcion` | `string` | Sí | Detalle del problema. Se guarda como interacción. |
 | `prioridad` | `string` | Sí | `"baja"`, `"media"`, `"alta"`, `"critica"`. |
 | `sistema_origen` | `string` | Sí | Siempre `"salud"`. |
 | `sistema_id` | `string` | Sí | Siempre `"P01"`. |
@@ -96,7 +96,7 @@ Prioridad de búsqueda: `cliente_email` → `cliente_telefono` → crear nuevo.
 
 ## Interacción automática
 
-Si se envía `descripcion`, se crea automáticamente una interacción en el ticket:
+La `descripcion` se crea automáticamente como interacción en el ticket:
 
 ```json
 {

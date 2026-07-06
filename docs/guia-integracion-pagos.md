@@ -44,7 +44,7 @@ x-api-key: pagos_secret_p04
 | Campo | Tipo | Obligatorio | Descripción |
 |---|---|---|---|
 | `asunto` | `string` | Sí | Motivo del ticket. |
-| `descripcion` | `string` | No | Detalle del problema. Se guarda como interacción con autor_id = `pago_id_ref`. |
+| `descripcion` | `string` | Sí | Detalle del problema. Se guarda como interacción con autor_id = `pago_id_ref`. |
 | `prioridad` | `string` | Sí | `"baja"`, `"media"`, `"alta"`, `"critica"`. |
 | `sistema_origen` | `string` | Sí | Siempre `"pagos"`. |
 | `sistema_id` | `string` | Sí | Siempre `"P04"`. |
@@ -100,7 +100,7 @@ Prioridad de búsqueda: `cliente_email` → `cliente_telefono` → crear nuevo.
 
 ## Interacción automática
 
-Si se envía `descripcion`, se crea automáticamente una interacción en el ticket:
+La `descripcion` se crea automáticamente como interacción en el ticket:
 
 ```json
 {

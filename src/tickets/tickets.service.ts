@@ -67,6 +67,18 @@ export class TicketsService {
       this.enviarNotificacionCreacion(savedTicket).catch(() => {});
     }
 
+    if (createTicketDto.descripcion) {
+      this.interaccionesService
+        .create({
+          ticket_id: savedTicket.id,
+          autor_tipo: AuthorTypeEnum.SISTEMA,
+          autor_id: '00000000-0000-0000-0000-000000000001',
+          contenido: createTicketDto.descripcion,
+          es_nota_interna: false,
+        })
+        .catch(() => {});
+    }
+
     if (createTicketDto.prioridad === TicketPriorityEnum.CRITICA) {
       const dtoMapped = this.mapToDto(savedTicket);
       this.incidentesService
@@ -117,6 +129,7 @@ export class TicketsService {
 
     const ticket = this.ticketRepository.create({
       asunto: dto.asunto,
+      descripcion: dto.descripcion,
       canal: 'email',
       prioridad: dto.prioridad,
       cliente_id: clienteId,
@@ -159,15 +172,26 @@ export class TicketsService {
         autorId = dto.salud_ref;
       }
 
-      this.interaccionesService
-        .create({
+      try {
+        this.logger.log(
+          `[createExterno] Creando interacción para ticket ${savedTicket.id}, autor_tipo=sistema, autor_id=${autorId}`,
+        );
+        await this.interaccionesService.create({
           ticket_id: savedTicket.id,
           autor_tipo: AuthorTypeEnum.SISTEMA,
           autor_id: autorId,
           contenido: dto.descripcion,
           es_nota_interna: false,
-        })
-        .catch(() => {});
+        });
+        this.logger.log(
+          `[createExterno] Interacción creada exitosamente para ticket ${savedTicket.id}`,
+        );
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        this.logger.error(
+          `[createExterno] Error al crear interacción para ticket ${savedTicket.id}: ${message}`,
+        );
+      }
     }
 
     if (dto.prioridad === TicketPriorityEnum.CRITICA) {
@@ -538,6 +562,7 @@ export class TicketsService {
       suscripcion_id_ref: ticket.suscripcion_id_ref,
       pago_id_ref: ticket.pago_id_ref,
       salud_ref: ticket.salud_ref,
+      descripcion: ticket.descripcion,
       resolucion: ticket.resolucion,
       creado_en: ticket.creado_en,
       actualizado_en: ticket.actualizado_en,
