@@ -2,6 +2,7 @@ import { Controller, Get, Post, Param, Body, HttpCode } from '@nestjs/common';
 import { EnlacesService } from './enlaces.service';
 import { CrearEnlaceDto } from './dtos/crear-enlace.dto';
 import { ResponderEnlaceDto } from './dtos/responder-enlace.dto';
+import { Public } from '../auth/decorators/public.decorator';
 
 @Controller('api/v1')
 export class EnlacesController {
@@ -13,11 +14,13 @@ export class EnlacesController {
     return this.enlacesService.crear(ticketId, body);
   }
 
+  @Public()
   @Get('enlace/:token')
   async obtenerPorToken(@Param('token') token: string) {
     return this.enlacesService.obtenerPorToken(token);
   }
 
+  @Public()
   @Post('enlace/:token/interacciones')
   @HttpCode(201)
   async responder(

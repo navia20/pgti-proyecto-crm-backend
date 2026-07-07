@@ -3,6 +3,8 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
+import { AuthModule } from './auth/auth.module';
+import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 import { ClientesModule } from './clientes/clientes.module';
 import { TicketsModule } from './tickets/tickets.module';
 import { InteraccionesModule } from './interacciones/interacciones.module';
@@ -49,6 +51,7 @@ import { SolicitudesModule } from './solicitudes/solicitudes.module';
         },
       }),
     }),
+    AuthModule,
     ClientesModule,
     TicketsModule,
     InteraccionesModule,
@@ -64,6 +67,10 @@ import { SolicitudesModule } from './solicitudes/solicitudes.module';
     SolicitudesModule,
   ],
   providers: [
+    {
+      provide: APP_GUARD,
+      useClass: JwtAuthGuard,
+    },
     {
       provide: APP_GUARD,
       useClass: ThrottlerGuard,

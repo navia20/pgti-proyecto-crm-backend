@@ -1,6 +1,7 @@
 import { Controller, Get, Param, Query } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { TicketsService } from '../tickets/tickets.service';
+import { Public } from '../auth/decorators/public.decorator';
 
 @Controller('api/v1/incidentes')
 export class IncidentesController {
@@ -9,6 +10,7 @@ export class IncidentesController {
     private readonly configService: ConfigService,
   ) {}
 
+  @Public()
   @Get('estado-ticket/:id')
   async obtenerEstadoTicket(
     @Param('id') id: string,

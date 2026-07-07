@@ -16,11 +16,13 @@ import {
   AprobarSolicitudDto,
   RechazarSolicitudDto,
 } from './dtos/aprobar-solicitud.dto';
+import { Public } from '../auth/decorators/public.decorator';
 
 @Controller('api/v1/solicitudes')
 export class SolicitudesController {
   constructor(private readonly solicitudesService: SolicitudesService) {}
 
+  @Public()
   @Post()
   @Throttle({ default: { limit: 3, ttl: 3600000 } })
   @HttpCode(HttpStatus.CREATED)

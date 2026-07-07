@@ -15,6 +15,7 @@ import { TicketsService } from './tickets.service';
 import { CreateTicketDto } from './dtos/create-ticket.dto';
 import { CreateTicketExternoDto } from './dtos/create-ticket-externo.dto';
 import { UpdateTicketDto } from './dtos/update-ticket.dto';
+import { Public } from '../auth/decorators/public.decorator';
 
 @Controller('api/v1/tickets')
 export class TicketsController {
@@ -34,6 +35,7 @@ export class TicketsController {
     return this.ticketsService.create(createTicketDto);
   }
 
+  @Public()
   @Post('externo')
   @HttpCode(201)
   async createExterno(
@@ -87,6 +89,7 @@ export class TicketsController {
     return this.ticketsService.getTicketsBySlaStatus();
   }
 
+  @Public()
   @Get('externo/:id')
   async findExterno(@Param('id') id: string, @Query('api_key') apiKey: string) {
     if (!apiKey) {

@@ -12,6 +12,7 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { TicketsService } from '../tickets/tickets.service';
 import { AnalyticsService } from './analytics.service';
+import { Public } from '../auth/decorators/public.decorator';
 
 @Controller('api/v1/analytics')
 export class AnalyticsController {
@@ -22,6 +23,7 @@ export class AnalyticsController {
     private readonly configService: ConfigService,
   ) {}
 
+  @Public()
   @Post('event')
   async recibirEvento(
     @Body() body: { event_type: string; payload: object },
@@ -46,6 +48,7 @@ export class AnalyticsController {
     return { ok: true, message: 'Evento recibido y enviado a analítica' };
   }
 
+  @Public()
   @Get('estado-ticket/:id')
   async obtenerEstadoTicket(
     @Param('id') id: string,

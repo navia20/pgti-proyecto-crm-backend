@@ -1,6 +1,7 @@
 import { Controller, Get, Post, Delete, Param, Body } from '@nestjs/common';
 import { InteraccionesService } from './interacciones.service';
 import { CreateInteraccionDto } from './dtos/create-interaccion.dto';
+import { Public } from '../auth/decorators/public.decorator';
 
 @Controller('api/v1/interacciones')
 export class InteraccionesController {
@@ -16,6 +17,7 @@ export class InteraccionesController {
     return this.interaccionesService.findByTicketId(ticketId);
   }
 
+  @Public()
   @Get('ticket/:ticketId/public')
   async findByTicketIdPublic(@Param('ticketId') ticketId: string) {
     return this.interaccionesService.findByTicketIdExcludingInternal(ticketId);
