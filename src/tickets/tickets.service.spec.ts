@@ -5,6 +5,8 @@ import { TicketsService } from './tickets.service';
 import { TicketEntity } from './entities/ticket.entity';
 import { ClientesService } from '../clientes/clientes.service';
 import { InteraccionesService } from '../interacciones/interacciones.service';
+import { IncidentesService } from '../incidentes/incidentes.service';
+import { NotificacionesService } from '../notificaciones/notificaciones.service';
 
 const mockTicket: Partial<TicketEntity> = {
   id: 'uuid-test-001',
@@ -14,6 +16,8 @@ const mockTicket: Partial<TicketEntity> = {
   canal: 'email',
   cliente_id: 1,
   agente_id: undefined,
+  descripcion: undefined as any,
+  sla_warned: false as any,
   fecha_vencimiento_sla: new Date('2026-07-10T10:00:00Z'),
   pedido_id_ref: undefined,
   suscripcion_id_ref: undefined,
@@ -44,17 +48,32 @@ const mockTicketRepository = {
   createQueryBuilder: jest.fn(() => mockQueryBuilder),
 };
 
-// Mocks de servicios inyectados por TicketsService.
-// Firmas tomadas del código real: getClientNames -> clientesService.findByIds(),
-// createExterno -> findByEmailOrTelefono() / create(), interaccionesService.create().
 const mockClientesService = {
   findByIds: jest.fn().mockResolvedValue([]),
   findByEmailOrTelefono: jest.fn().mockResolvedValue(null),
   create: jest.fn().mockResolvedValue({ id: 1 }),
+  findOne: jest.fn().mockResolvedValue({ id: 1, nombre_completo: 'Cliente', email: 'c@x.com', telefono: '123' }),
 };
 
 const mockInteraccionesService = {
   create: jest.fn().mockResolvedValue({}),
+};
+
+// Servicios nuevos que trajo el merge. Firmas del código real:
+// IncidentesService.enviarAlerta -> Promise<void>
+// NotificacionesService.notificar* -> Promise<boolean>
+const mockIncidentesService = {
+  enviarAlerta: jest.fn().mockResolvedValue(undefined),
+};
+
+const mockNotificacionesService = {
+  notificarTicketCreado: jest.fn().mockResolvedValue(true),
+  notificarTicketCerrado: jest.fn().mockResolvedValue(true),
+  notificarTicketCriticoAdmin: jest.fn().mockResolvedValue(true),
+  notificarTicketCriticoResuelto: jest.fn().mockResolvedValue(true),
+  notificarAsignacionAgente: jest.fn().mockResolvedValue(true),
+  notificarSlaWarning: jest.fn().mockResolvedValue(true),
+  notificarInteraccionClienteCritico: jest.fn().mockResolvedValue(true),
 };
 
 describe('TicketsService', () => {
@@ -75,6 +94,14 @@ describe('TicketsService', () => {
         {
           provide: InteraccionesService,
           useValue: mockInteraccionesService,
+        },
+        {
+          provide: IncidentesService,
+          useValue: mockIncidentesService,
+        },
+        {
+          provide: NotificacionesService,
+          useValue: mockNotificacionesService,
         },
       ],
     }).compile();
@@ -100,7 +127,16 @@ describe('TicketsService', () => {
     mockClientesService.findByIds.mockResolvedValue([]);
     mockClientesService.findByEmailOrTelefono.mockResolvedValue(null);
     mockClientesService.create.mockResolvedValue({ id: 1 });
+    mockClientesService.findOne.mockResolvedValue({ id: 1, nombre_completo: 'Cliente', email: 'c@x.com', telefono: '123' });
     mockInteraccionesService.create.mockResolvedValue({});
+    mockIncidentesService.enviarAlerta.mockResolvedValue(undefined);
+    mockNotificacionesService.notificarTicketCreado.mockResolvedValue(true);
+    mockNotificacionesService.notificarTicketCerrado.mockResolvedValue(true);
+    mockNotificacionesService.notificarTicketCriticoAdmin.mockResolvedValue(true);
+    mockNotificacionesService.notificarTicketCriticoResuelto.mockResolvedValue(true);
+    mockNotificacionesService.notificarAsignacionAgente.mockResolvedValue(true);
+    mockNotificacionesService.notificarSlaWarning.mockResolvedValue(true);
+    mockNotificacionesService.notificarInteraccionClienteCritico.mockResolvedValue(true);
   });
 
   it('debería estar definido', () => {
@@ -327,7 +363,6 @@ describe('TicketsService', () => {
   // ============================================
 
   describe('createExterno', () => {
-    // Helper para dejar correr microtasks pendientes (fire-and-forget sin await).
     const flushPromises = () => new Promise((resolve) => setImmediate(resolve));
 
     const baseDto = {
@@ -521,8 +556,8 @@ describe('TicketsService', () => {
 
     it('debería clasificar ticket como critical si el SLA venció', async () => {
       const ahora = new Date();
-      const creado = new Date(ahora.getTime() - 24 * 60 * 60 * 1000); // hace 24h
-      const vencido = new Date(ahora.getTime() - 1 * 60 * 60 * 1000); // venció hace 1h
+      const creado = new Date(ahora.getTime() - 24 * 60 * 60 * 1000);
+      const vencido = new Date(ahora.getTime() - 1 * 60 * 60 * 1000);
 
       mockTicketRepository.find.mockResolvedValueOnce([
         { ...mockTicket, creado_en: creado, fecha_vencimiento_sla: vencido },
@@ -536,8 +571,8 @@ describe('TicketsService', () => {
 
     it('debería clasificar ticket como ok si tiene más del 25% de SLA restante', async () => {
       const ahora = new Date();
-      const creado = new Date(ahora.getTime() - 1 * 60 * 60 * 1000);    // hace 1h
-      const vencimiento = new Date(ahora.getTime() + 10 * 60 * 60 * 1000); // vence en 10h
+      const creado = new Date(ahora.getTime() - 1 * 60 * 60 * 1000);
+      const vencimiento = new Date(ahora.getTime() + 10 * 60 * 60 * 1000);
 
       mockTicketRepository.find.mockResolvedValueOnce([
         { ...mockTicket, creado_en: creado, fecha_vencimiento_sla: vencimiento },
