@@ -13,31 +13,31 @@ export type CanalNotificacion = 'email' | 'whatsapp' | 'sms' | 'otro';
 @Entity('ticket_enlaces')
 export class TicketEnlaceEntity {
   @PrimaryGeneratedColumn('uuid')
-  id: string;
+  id!: string;
 
   @Column('uuid')
-  ticket_id: string;
+  ticket_id!: string;
 
   @Column({ type: 'varchar', unique: true })
-  token: string;
+  token!: string;
 
   @Column({
     type: 'enum',
     enum: ['email', 'whatsapp', 'sms', 'otro'],
     default: 'otro',
   })
-  canal_notificacion: CanalNotificacion;
+  canal_notificacion!: CanalNotificacion;
 
   @Column({ type: 'timestamp' })
-  expira_en: Date;
+  expira_en!: Date;
 
   @Column({ type: 'boolean', default: true })
-  activo: boolean;
+  activo!: boolean;
 
   @CreateDateColumn()
-  creado_en: Date;
+  creado_en!: Date;
 
   @ManyToOne(() => TicketEntity, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'ticket_id' })
-  ticket: TicketEntity;
+  ticket!: TicketEntity;
 }

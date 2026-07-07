@@ -15,8 +15,6 @@ import {
 import { TicketsService } from '../tickets/tickets.service';
 import { NotificacionesService } from '../notificaciones/notificaciones.service';
 import { ClientesService } from '../clientes/clientes.service';
-import { InteraccionesService } from '../interacciones/interacciones.service';
-import { AuthorTypeEnum } from '../interacciones/dtos/create-interaccion.dto';
 import {
   TicketChannelEnum,
   TicketPriorityEnum,
@@ -32,7 +30,6 @@ export class SolicitudesService {
     private readonly ticketsService: TicketsService,
     private readonly notificacionesService: NotificacionesService,
     private readonly clientesService: ClientesService,
-    private readonly interaccionesService: InteraccionesService,
   ) {}
 
   async crear(dto: CrearSolicitudDto): Promise<TicketSolicitudEntity> {
@@ -106,16 +103,6 @@ export class SolicitudesService {
       cliente_id: cliente.id,
       descripcion: contenidoInteraccion || undefined,
     });
-
-    if (contenidoInteraccion) {
-      await this.interaccionesService.create({
-        ticket_id: ticket.id,
-        autor_tipo: AuthorTypeEnum.SISTEMA,
-        autor_id: 'sistema-solicitudes',
-        contenido: contenidoInteraccion,
-        es_nota_interna: false,
-      });
-    }
 
     solicitud.estado = 'aprobada';
     await this.solicitudRepository.save(solicitud);
