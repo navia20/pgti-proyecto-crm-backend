@@ -19,6 +19,16 @@ interface JwksKey {
   e: string;
 }
 
+interface JwksResponse {
+  keys: JwksKey[];
+}
+
+interface JwtHeader {
+  kid: string;
+  alg: string;
+  typ: string;
+}
+
 let cachedPublicKey: string | null = null;
 let cacheExpiry = 0;
 
@@ -31,8 +41,8 @@ async function getPublicKey(kid: string): Promise<string> {
   const realm = process.env.KEYCLOAK_REALM;
   const certsUrl = `${keycloakUrl}/realms/${realm}/protocol/openid-connect/certs`;
 
-  const { data } = await axios.get(certsUrl);
-  const key = data.keys.find((k: JwksKey) => k.kid === kid);
+  const { data } = await axios.get<JwksResponse>(certsUrl);
+  const key = data.keys.find((k) => k.kid === kid);
 
   if (!key) {
     throw new Error(`Key ${kid} not found in JWKS`);
@@ -62,7 +72,10 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
     const realm = process.env.KEYCLOAK_REALM;
 
     if (!keycloakUrl || !realm) {
-      super({ secretOrKey: 'no-keycloak-configured', jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken() });
+      super({
+        secretOrKey: 'no-keycloak-configured',
+        jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+      });
       this.logger.warn('Keycloak no configurado — auth deshabilitado');
       return;
     }
@@ -70,16 +83,17 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
-      secretOrKeyProvider: async (request: any, rawJwtToken: string, done: any) => {
-        try {
-          const header = JSON.parse(
-            Buffer.from(rawJwtToken.split('.')[0], 'base64url').toString(),
-          );
-          const publicKey = await getPublicKey(header.kid);
-          done(null, publicKey);
-        } catch (err) {
-          done(err);
-        }
+      secretOrKeyProvider: (
+        request: Record<string, unknown>,
+        rawJwtToken: string,
+        done: (err: Error | null, key?: string) => void,
+      ) => {
+        const header = JSON.parse(
+          Buffer.from(rawJwtToken.split('.')[0], 'base64url').toString(),
+        ) as JwtHeader;
+        getPublicKey(header.kid)
+          .then((publicKey) => done(null, publicKey))
+          .catch((err: Error) => done(err));
       },
       issuer: `${keycloakUrl}/realms/${realm}`,
       algorithms: ['RS256'],

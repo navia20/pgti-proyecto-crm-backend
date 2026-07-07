@@ -135,7 +135,11 @@ export class TicketsController {
 
   @Get(':id')
   async findById(@Param('id') id: string) {
-    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)) {
+    if (
+      !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+        id,
+      )
+    ) {
       return { ok: false, message: 'ID inválido' };
     }
     return this.ticketsService.findById(id);
@@ -146,7 +150,11 @@ export class TicketsController {
     @Param('id') id: string,
     @Body() updateTicketDto: UpdateTicketDto,
   ) {
-    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)) {
+    if (
+      !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+        id,
+      )
+    ) {
       return { ok: false, message: 'ID inválido' };
     }
     return this.ticketsService.update(id, updateTicketDto);
@@ -154,7 +162,11 @@ export class TicketsController {
 
   @Delete(':id')
   async delete(@Param('id') id: string) {
-    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)) {
+    if (
+      !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+        id,
+      )
+    ) {
       return { ok: false, message: 'ID inválido' };
     }
     return this.ticketsService.delete(id);

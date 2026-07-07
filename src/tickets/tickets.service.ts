@@ -356,7 +356,7 @@ export class TicketsService {
 
     const clienteNames = ticket.cliente_id
       ? await this.getClientNames([ticket])
-      : new Map();
+      : new Map<number, string>();
 
     return this.mapToDto(
       ticket,
@@ -483,7 +483,7 @@ export class TicketsService {
 
     const clienteNames = ticket.cliente_id
       ? await this.getClientNames([ticket])
-      : new Map();
+      : new Map<number, string>();
 
     return this.mapToDto(
       ticket,
