@@ -22,10 +22,11 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
     return super.canActivate(context);
   }
 
-  handleRequest(err: unknown, user: unknown) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
+  handleRequest<TUser = any>(err: any, user: any, ...args: any[]): TUser {
     if (err || !user) {
-      return null;
+      return null as TUser;
     }
-    return user;
+    return user as TUser;
   }
 }
