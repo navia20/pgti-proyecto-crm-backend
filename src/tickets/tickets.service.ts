@@ -7,7 +7,7 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { TicketEntity, TicketPriority } from './entities/ticket.entity';
-import { CreateTicketDto } from './dtos/create-ticket.dto';
+import { CreateTicketDto, TicketPriorityEnum } from './dtos/create-ticket.dto';
 import {
   CreateTicketExternoDto,
   TicketSourceEnum,
@@ -15,10 +15,11 @@ import {
 import { UpdateTicketDto } from './dtos/update-ticket.dto';
 import { TicketDto } from './dtos/ticket.dto';
 // import { AnalyticsService } from '../analytics/analytics.service';
-// import { IncidentesService } from '../incidentes/incidentes.service';
+import { IncidentesService } from '../incidentes/incidentes.service';
 import { ClientesService } from '../clientes/clientes.service';
 import { InteraccionesService } from '../interacciones/interacciones.service';
 import { AuthorTypeEnum } from '../interacciones/dtos/create-interaccion.dto';
+import { NotificacionesService } from '../notificaciones/notificaciones.service';
 
 @Injectable()
 export class TicketsService {
@@ -28,9 +29,10 @@ export class TicketsService {
     @InjectRepository(TicketEntity)
     private ticketRepository: Repository<TicketEntity>,
     // private readonly analyticsService: AnalyticsService,
-    // private readonly incidentesService: IncidentesService,
+    private readonly incidentesService: IncidentesService,
     private readonly clientesService: ClientesService,
     private readonly interaccionesService: InteraccionesService,
+    private readonly notificacionesService: NotificacionesService,
   ) {}
 
   private calculateSlaExpiration(prioridad: TicketPriority): Date {
@@ -61,14 +63,40 @@ export class TicketsService {
 
     const savedTicket = await this.ticketRepository.save(ticket);
 
-    // this.emitTicketCreado(savedTicket).catch(() => {});
+    if (savedTicket.cliente_id) {
+      this.enviarNotificacionCreacion(savedTicket).catch(() => {});
+    }
 
-    // if (createTicketDto.prioridad === TicketPriorityEnum.CRITICA) {
-    //   const dto = this.mapToDto(savedTicket);
-    //   this.incidentesService
-    //     .enviarAlerta(dto, createTicketDto.descripcion)
-    //     .catch(() => {});
-    // }
+    if (createTicketDto.descripcion) {
+      this.interaccionesService
+        .create({
+          ticket_id: savedTicket.id,
+          autor_tipo: AuthorTypeEnum.SISTEMA,
+          autor_id: '00000000-0000-0000-0000-000000000001',
+          contenido: createTicketDto.descripcion,
+          es_nota_interna: false,
+        })
+        .catch(() => {});
+    }
+
+    if (createTicketDto.prioridad === TicketPriorityEnum.CRITICA) {
+      const dtoMapped = this.mapToDto(savedTicket);
+      this.incidentesService
+        .enviarAlerta(dtoMapped, createTicketDto.descripcion)
+        .catch(() => {});
+      this.notificacionesService
+        .notificarTicketCriticoAdmin(
+          savedTicket.id,
+          savedTicket.asunto,
+          savedTicket.prioridad,
+          savedTicket.canal,
+          'Creado internamente',
+          undefined,
+          savedTicket.fecha_vencimiento_sla,
+          savedTicket.creado_en,
+        )
+        .catch(() => {});
+    }
 
     return this.mapToDto(savedTicket);
   }
@@ -101,6 +129,7 @@ export class TicketsService {
 
     const ticket = this.ticketRepository.create({
       asunto: dto.asunto,
+      descripcion: dto.descripcion,
       canal: 'email',
       prioridad: dto.prioridad,
       cliente_id: clienteId,
@@ -115,7 +144,9 @@ export class TicketsService {
 
     const savedTicket = await this.ticketRepository.save(ticket);
 
-    // this.emitTicketCreado(savedTicket).catch(() => {});
+    if (savedTicket.cliente_id) {
+      this.enviarNotificacionCreacion(savedTicket).catch(() => {});
+    }
 
     if (dto.descripcion) {
       let autorId = '00000000-0000-0000-0000-000000000001';
@@ -141,23 +172,46 @@ export class TicketsService {
         autorId = dto.salud_ref;
       }
 
-      this.interaccionesService
-        .create({
+      try {
+        this.logger.log(
+          `[createExterno] Creando interacción para ticket ${savedTicket.id}, autor_tipo=sistema, autor_id=${autorId}`,
+        );
+        await this.interaccionesService.create({
           ticket_id: savedTicket.id,
           autor_tipo: AuthorTypeEnum.SISTEMA,
           autor_id: autorId,
           contenido: dto.descripcion,
           es_nota_interna: false,
-        })
-        .catch(() => {});
+        });
+        this.logger.log(
+          `[createExterno] Interacción creada exitosamente para ticket ${savedTicket.id}`,
+        );
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        this.logger.error(
+          `[createExterno] Error al crear interacción para ticket ${savedTicket.id}: ${message}`,
+        );
+      }
     }
 
-    // if (dto.prioridad === TicketPriorityEnum.CRITICA) {
-    //   const dtoMapped = this.mapToDto(savedTicket);
-    //   this.incidentesService
-    //     .enviarAlerta(dtoMapped, dto.descripcion)
-    //     .catch(() => {});
-    // }
+    if (dto.prioridad === TicketPriorityEnum.CRITICA) {
+      const dtoMapped = this.mapToDto(savedTicket);
+      this.incidentesService
+        .enviarAlerta(dtoMapped, dto.descripcion)
+        .catch(() => {});
+      this.notificacionesService
+        .notificarTicketCriticoAdmin(
+          savedTicket.id,
+          savedTicket.asunto,
+          savedTicket.prioridad,
+          savedTicket.canal,
+          `Creado desde ${dto.sistema_origen}`,
+          undefined,
+          savedTicket.fecha_vencimiento_sla,
+          savedTicket.creado_en,
+        )
+        .catch(() => {});
+    }
 
     return this.mapToDto(savedTicket);
   }
@@ -242,7 +296,7 @@ export class TicketsService {
 
     return {
       data: tickets.map((t) =>
-        this.mapToDto(t, clienteNames.get(t.cliente_id)),
+        this.mapToDto(t, t.cliente_id ? clienteNames.get(t.cliente_id) : undefined),
       ),
       total,
     };
@@ -264,7 +318,7 @@ export class TicketsService {
 
     return this.mapToDto(
       ticket,
-      clienteNames.get(ticket.cliente_id) as string | undefined,
+      ticket.cliente_id ? clienteNames.get(ticket.cliente_id) : undefined,
     );
   }
 
@@ -276,7 +330,7 @@ export class TicketsService {
 
     const clienteNames = await this.getClientNames(tickets);
 
-    return tickets.map((t) => this.mapToDto(t, clienteNames.get(t.cliente_id)));
+    return tickets.map((t) => this.mapToDto(t, t.cliente_id ? clienteNames.get(t.cliente_id) : undefined));
   }
 
   async update(
@@ -289,6 +343,9 @@ export class TicketsService {
       throw new NotFoundException(`Ticket ${id} no encontrado`);
     }
 
+    const previousEstado = ticket.estado;
+    const previousAgenteId = ticket.agente_id;
+
     if (updateTicketDto.prioridad) {
       updateTicketDto['fecha_vencimiento_sla'] = this.calculateSlaExpiration(
         updateTicketDto.prioridad,
@@ -298,11 +355,63 @@ export class TicketsService {
     Object.assign(ticket, updateTicketDto);
     const updatedTicket = await this.ticketRepository.save(ticket);
 
-    // this.emitUpdateEvents(
-    //   updatedTicket,
-    //   previousAgenteId,
-    //   previousEstado,
-    // ).catch(() => {});
+    if (
+      previousEstado !== 'resuelto' &&
+      previousEstado !== 'cerrado' &&
+      (updatedTicket.estado === 'resuelto' ||
+        updatedTicket.estado === 'cerrado')
+    ) {
+      this.enviarNotificacionCierre(updatedTicket).catch(() => {});
+
+      if (updatedTicket.prioridad === 'critica') {
+        this.notificacionesService
+          .notificarTicketCriticoResuelto(
+            updatedTicket.id,
+            updatedTicket.asunto,
+            updatedTicket.resolucion || 'Sin resolución especificada',
+            updatedTicket.agente_id || undefined,
+            updatedTicket.creado_en,
+          )
+          .catch(() => {});
+      }
+    }
+
+    if (
+      updateTicketDto.agente_id &&
+      updateTicketDto.agente_id !== previousAgenteId
+    ) {
+      this.notificacionesService
+        .notificarAsignacionAgente(
+          updatedTicket.id,
+          updatedTicket.asunto,
+          updateTicketDto.agente_id,
+          previousAgenteId || undefined,
+        )
+        .catch(() => {});
+    }
+
+    if (updatedTicket.prioridad === 'critica' && !ticket.sla_warned) {
+      const now = new Date();
+      const totalMs =
+        updatedTicket.fecha_vencimiento_sla.getTime() -
+        updatedTicket.creado_en.getTime();
+      const remainingMs =
+        updatedTicket.fecha_vencimiento_sla.getTime() - now.getTime();
+      const porcentajeRestante = (remainingMs / totalMs) * 100;
+
+      if (porcentajeRestante <= 25) {
+        ticket.sla_warned = true;
+        await this.ticketRepository.save(ticket);
+        this.notificacionesService
+          .notificarSlaWarning(
+            updatedTicket.id,
+            updatedTicket.asunto,
+            updatedTicket.prioridad,
+            porcentajeRestante,
+          )
+          .catch(() => {});
+      }
+    }
 
     return this.mapToDto(updatedTicket);
   }
@@ -313,6 +422,23 @@ export class TicketsService {
     if (result.affected === 0) {
       throw new NotFoundException(`Ticket ${id} no encontrado`);
     }
+  }
+
+  async obtenerEstadoTicket(ticketId: string): Promise<TicketDto | null> {
+    const ticket = await this.ticketRepository.findOne({
+      where: { id: ticketId },
+      relations: ['interacciones', 'articulos'],
+    });
+
+    if (!ticket) {
+      return null;
+    }
+
+    const clienteNames = ticket.cliente_id
+      ? await this.getClientNames([ticket])
+      : new Map();
+
+    return this.mapToDto(ticket, ticket.cliente_id ? clienteNames.get(ticket.cliente_id) : undefined);
   }
 
   async getTicketsBySlaStatus(): Promise<{
@@ -348,72 +474,58 @@ export class TicketsService {
     return { ok, warning, critical };
   }
 
-  // private async emitTicketCreado(ticket: TicketEntity): Promise<void> {
-  //   let clienteIdentidadId: string | null = null;
-  //   let email: string | null = null;
-  //   let telefono: string | null = null;
-  //   if (ticket.cliente_id) {
-  //     try {
-  //       const cliente = await this.clientesService.findOne(ticket.cliente_id);
-  //       clienteIdentidadId = `usr-${cliente.id}`;
-  //       email = cliente.email;
-  //       telefono = cliente.telefono ?? null;
-  //     } catch {}
-  //   }
-  //   await this.analyticsService.emit('ticket.creado', {
-  //     ticket_id: ticket.id,
-  //     asunto: ticket.asunto,
-  //     estado: this.analyticsService.mapEstado(ticket.estado),
-  //     prioridad: this.analyticsService.mapPrioridad(ticket.prioridad),
-  //     canal: this.analyticsService.mapCanal(ticket.canal),
-  //     source_project: ticket.pedido_id_ref,
-  //     cliente_identidad_id: clienteIdentidadId,
-  //     email,
-  //     telefono,
-  //     agente_id: ticket.agente_id,
-  //     pedido_id_ref: ticket.pedido_id_ref,
-  //     suscripcion_id_red: ticket.suscripcion_id_ref,
-  //     fecha_vencimiento_sla: ticket.fecha_vencimiento_sla.toISOString(),
-  //   });
-  // }
+  private async enviarNotificacionCreacion(
+    ticket: TicketEntity,
+  ): Promise<void> {
+    try {
+      if (!ticket.cliente_id) return;
+      this.logger.log(
+        `[Notificación] Preparando notificación de creación para ticket ${ticket.id}, canal=${ticket.canal}`,
+      );
+      const cliente = await this.clientesService.findOne(ticket.cliente_id);
+      this.logger.log(
+        `[Notificación] Cliente: ${cliente.nombre_completo}, email=${cliente.email}, telefono=${cliente.telefono}`,
+      );
+      const resultado = await this.notificacionesService.notificarTicketCreado(
+        ticket.id,
+        ticket.asunto,
+        ticket.prioridad,
+        ticket.canal,
+        cliente.email,
+        cliente.telefono,
+        cliente.nombre_completo,
+      );
+      this.logger.log(
+        `[Notificación] Resultado notificación ticket ${ticket.id}: ${resultado}`,
+      );
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.error(
+        `[Notificación] Error al enviar notificación de creación para ticket ${ticket.id}: ${message}`,
+      );
+    }
+  }
 
-  // private async emitUpdateEvents(
-  //   ticket: TicketEntity,
-  //   previousAgenteId: string | null,
-  //   previousEstado: string,
-  // ): Promise<void> {
-  //   if (!previousAgenteId && ticket.agente_id) {
-  //     await this.analyticsService.emit('ticket.asignado', {
-  //       ticket_id: ticket.id,
-  //       agente_id: ticket.agente_id,
-  //       estado: this.analyticsService.mapEstado(ticket.estado),
-  //     });
-  //   }
-  //   if (previousEstado !== 'resuelto' && ticket.estado === 'resuelto') {
-  //     if (!ticket.agente_id) {
-  //       this.logger.warn(`Ticket ${ticket.id} resuelto sin agente asignado`);
-  //     } else {
-  //       const now = new Date();
-  //       const resolutionTimeHours = (now.getTime() - ticket.creado_en.getTime()) / (1000 * 60 * 60);
-  //       const withinSla = now <= ticket.fecha_vencimiento_sla;
-  //       await this.analyticsService.emit('ticket.resuelto', {
-  //         ticket_id: ticket.id,
-  //         resolved_at: now.toISOString(),
-  //         resolution_time_hours: Math.round(resolutionTimeHours * 10) / 10,
-  //         within_sla: withinSla,
-  //         agente_id: ticket.agente_id,
-  //         prioridad: this.analyticsService.mapPrioridad(ticket.prioridad),
-  //       });
-  //     }
-  //   }
-  //   if (previousEstado !== 'cerrado' && ticket.estado === 'cerrado') {
-  //     await this.analyticsService.emit('ticket.cerrado', {
-  //       ticket_id: ticket.id,
-  //       closed_at: new Date().toISOString(),
-  //       csat_score: null,
-  //     });
-  //   }
-  // }
+  private async enviarNotificacionCierre(ticket: TicketEntity): Promise<void> {
+    try {
+      if (!ticket.cliente_id) return;
+      const cliente = await this.clientesService.findOne(ticket.cliente_id);
+      await this.notificacionesService.notificarTicketCerrado(
+        ticket.id,
+        ticket.asunto || 'Sin asunto',
+        ticket.resolucion || 'Sin resolución especificada',
+        ticket.canal,
+        cliente.email,
+        cliente.telefono,
+        cliente.nombre_completo,
+      );
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.error(
+        `Error al enviar notificación de cierre para ticket ${ticket.id}: ${message}`,
+      );
+    }
+  }
 
   private async getClientNames(
     tickets: TicketEntity[],
@@ -452,6 +564,7 @@ export class TicketsService {
       suscripcion_id_ref: ticket.suscripcion_id_ref,
       pago_id_ref: ticket.pago_id_ref,
       salud_ref: ticket.salud_ref,
+      descripcion: ticket.descripcion,
       resolucion: ticket.resolucion,
       creado_en: ticket.creado_en,
       actualizado_en: ticket.actualizado_en,

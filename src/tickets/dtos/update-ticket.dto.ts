@@ -1,4 +1,4 @@
-import { IsString, IsEnum, IsOptional, IsUUID } from 'class-validator';
+import { IsString, IsEnum, IsOptional } from 'class-validator';
 import { TicketChannelEnum, TicketPriorityEnum } from './create-ticket.dto';
 
 export enum TicketStatusEnum {

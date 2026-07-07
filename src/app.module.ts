@@ -1,6 +1,8 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
+import { APP_GUARD } from '@nestjs/core';
 import { ClientesModule } from './clientes/clientes.module';
 import { TicketsModule } from './tickets/tickets.module';
 import { InteraccionesModule } from './interacciones/interacciones.module';
@@ -9,14 +11,24 @@ import { TicketArticulosModule } from './ticket-articulos/ticket-articulos.modul
 import { EventosModule } from './eventos/eventos.module';
 import { ReportesModule } from './reportes/reportes.module';
 import { EventosSalientesModule } from './eventos-salientes/eventos-salientes.module';
-// import { AnalyticsModule } from './analytics/analytics.module';
+import { AnalyticsModule } from './analytics/analytics.module';
+import { IncidentesModule } from './incidentes/incidentes.module';
 import { EnlacesModule } from './enlaces/enlaces.module';
+import { NotificacionesModule } from './notificaciones/notificaciones.module';
+import { SolicitudesModule } from './solicitudes/solicitudes.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
     }),
+    ThrottlerModule.forRoot([
+      {
+        name: 'default',
+        ttl: 60000,
+        limit: 60,
+      },
+    ]),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
@@ -45,8 +57,17 @@ import { EnlacesModule } from './enlaces/enlaces.module';
     EventosModule,
     ReportesModule,
     EventosSalientesModule,
-    // AnalyticsModule,
+    AnalyticsModule,
+    IncidentesModule,
     EnlacesModule,
+    NotificacionesModule,
+    SolicitudesModule,
+  ],
+  providers: [
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
+    },
   ],
 })
 export class AppModule {}

@@ -44,7 +44,7 @@ x-api-key: suscripciones_secret_p10
 | Campo | Tipo | Obligatorio | Descripción |
 |---|---|---|---|
 | `asunto` | `string` | Sí | Motivo del ticket. |
-| `descripcion` | `string` | No | Detalle. Se guarda como interacción. |
+| `descripcion` | `string` | Sí | Detalle. Se guarda como interacción. |
 | `prioridad` | `string` | Sí | `"baja"`, `"media"`, `"alta"`, `"critica"`. |
 | `sistema_origen` | `string` | Sí | Siempre `"suscripciones"`. |
 | `sistema_id` | `string` | Sí | Siempre `"P10"`. |
@@ -95,7 +95,7 @@ Prioridad de búsqueda: `cliente_email` → `cliente_telefono` → crear nuevo.
 
 ## Interacción automática
 
-Si se envía `descripcion`, se crea automáticamente una interacción en el ticket:
+La `descripcion` se crea automáticamente como interacción en el ticket:
 
 ```json
 {

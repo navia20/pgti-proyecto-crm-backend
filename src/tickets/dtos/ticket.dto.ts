@@ -14,5 +14,6 @@ export class TicketDto {
   salud_ref?: string;
   creado_en!: Date;
   actualizado_en!: Date;
+  descripcion?: string;
   resolucion?: string;
 }

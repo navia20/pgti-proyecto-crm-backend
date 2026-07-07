@@ -22,13 +22,13 @@ export enum TicketPriorityEnum {
 
 export class CreateTicketDto {
   @IsString()
-  asunto: string;
+  asunto!: string;
 
   @IsEnum(TicketChannelEnum)
-  canal: TicketChannelEnum;
+  canal!: TicketChannelEnum;
 
   @IsEnum(TicketPriorityEnum)
-  prioridad: TicketPriorityEnum;
+  prioridad!: TicketPriorityEnum;
 
   @IsOptional()
   @IsNumber()
