@@ -296,7 +296,10 @@ export class TicketsService {
 
     return {
       data: tickets.map((t) =>
-        this.mapToDto(t, t.cliente_id ? clienteNames.get(t.cliente_id) : undefined),
+        this.mapToDto(
+          t,
+          t.cliente_id ? clienteNames.get(t.cliente_id) : undefined,
+        ),
       ),
       total,
     };
@@ -330,7 +333,14 @@ export class TicketsService {
 
     const clienteNames = await this.getClientNames(tickets);
 
-    return tickets.map((t) => this.mapToDto(t, t.cliente_id ? clienteNames.get(t.cliente_id) : undefined));
+    return tickets.map((t) =>
+      this.mapToDto(
+        t,
+        t.cliente_id
+          ? (clienteNames.get(t.cliente_id) ?? undefined)
+          : undefined,
+      ),
+    );
   }
 
   async update(
@@ -438,7 +448,10 @@ export class TicketsService {
       ? await this.getClientNames([ticket])
       : new Map();
 
-    return this.mapToDto(ticket, ticket.cliente_id ? clienteNames.get(ticket.cliente_id) : undefined);
+    return this.mapToDto(
+      ticket,
+      ticket.cliente_id ? clienteNames.get(ticket.cliente_id) : undefined,
+    );
   }
 
   async getTicketsBySlaStatus(): Promise<{

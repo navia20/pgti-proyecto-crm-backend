@@ -52,7 +52,12 @@ const mockClientesService = {
   findByIds: jest.fn().mockResolvedValue([]),
   findByEmailOrTelefono: jest.fn().mockResolvedValue(null),
   create: jest.fn().mockResolvedValue({ id: 1 }),
-  findOne: jest.fn().mockResolvedValue({ id: 1, nombre_completo: 'Cliente', email: 'c@x.com', telefono: '123' }),
+  findOne: jest.fn().mockResolvedValue({
+    id: 1,
+    nombre_completo: 'Cliente',
+    email: 'c@x.com',
+    telefono: '123',
+  }),
 };
 
 const mockInteraccionesService = {
@@ -115,7 +120,10 @@ describe('TicketsService', () => {
     mockTicketRepository.delete.mockResolvedValue({ affected: 1 });
     mockTicketRepository.remove.mockResolvedValue(mockTicket);
     mockTicketRepository.count.mockResolvedValue(1);
-    mockTicketRepository.create.mockImplementation((data) => ({ ...mockTicket, ...data }));
+    mockTicketRepository.create.mockImplementation((data) => ({
+      ...mockTicket,
+      ...data,
+    }));
     mockTicketRepository.createQueryBuilder.mockReturnValue(mockQueryBuilder);
     mockQueryBuilder.getMany.mockResolvedValue([mockTicket]);
     mockQueryBuilder.getManyAndCount.mockResolvedValue([[mockTicket], 1]);
@@ -127,16 +135,27 @@ describe('TicketsService', () => {
     mockClientesService.findByIds.mockResolvedValue([]);
     mockClientesService.findByEmailOrTelefono.mockResolvedValue(null);
     mockClientesService.create.mockResolvedValue({ id: 1 });
-    mockClientesService.findOne.mockResolvedValue({ id: 1, nombre_completo: 'Cliente', email: 'c@x.com', telefono: '123' });
+    mockClientesService.findOne.mockResolvedValue({
+      id: 1,
+      nombre_completo: 'Cliente',
+      email: 'c@x.com',
+      telefono: '123',
+    });
     mockInteraccionesService.create.mockResolvedValue({});
     mockIncidentesService.enviarAlerta.mockResolvedValue(undefined);
     mockNotificacionesService.notificarTicketCreado.mockResolvedValue(true);
     mockNotificacionesService.notificarTicketCerrado.mockResolvedValue(true);
-    mockNotificacionesService.notificarTicketCriticoAdmin.mockResolvedValue(true);
-    mockNotificacionesService.notificarTicketCriticoResuelto.mockResolvedValue(true);
+    mockNotificacionesService.notificarTicketCriticoAdmin.mockResolvedValue(
+      true,
+    );
+    mockNotificacionesService.notificarTicketCriticoResuelto.mockResolvedValue(
+      true,
+    );
     mockNotificacionesService.notificarAsignacionAgente.mockResolvedValue(true);
     mockNotificacionesService.notificarSlaWarning.mockResolvedValue(true);
-    mockNotificacionesService.notificarInteraccionClienteCritico.mockResolvedValue(true);
+    mockNotificacionesService.notificarInteraccionClienteCritico.mockResolvedValue(
+      true,
+    );
   });
 
   it('debería estar definido', () => {
@@ -211,35 +230,80 @@ describe('TicketsService', () => {
 
   describe('findAll — filtro por referencia', () => {
     it('debería filtrar por pedido (pedido_id_ref IS NOT NULL)', async () => {
-      await service.findAll(0, 10, undefined, undefined, undefined, undefined, undefined, 'pedido');
+      await service.findAll(
+        0,
+        10,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        'pedido',
+      );
       expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(
         'ticket.pedido_id_ref IS NOT NULL',
       );
     });
 
     it('debería filtrar por suscripcion (suscripcion_id_ref IS NOT NULL)', async () => {
-      await service.findAll(0, 10, undefined, undefined, undefined, undefined, undefined, 'suscripcion');
+      await service.findAll(
+        0,
+        10,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        'suscripcion',
+      );
       expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(
         'ticket.suscripcion_id_ref IS NOT NULL',
       );
     });
 
     it('debería filtrar por salud (salud_ref IS NOT NULL)', async () => {
-      await service.findAll(0, 10, undefined, undefined, undefined, undefined, undefined, 'salud');
+      await service.findAll(
+        0,
+        10,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        'salud',
+      );
       expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(
         'ticket.salud_ref IS NOT NULL',
       );
     });
 
     it('debería filtrar por pago (pago_id_ref IS NOT NULL)', async () => {
-      await service.findAll(0, 10, undefined, undefined, undefined, undefined, undefined, 'pago');
+      await service.findAll(
+        0,
+        10,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        'pago',
+      );
       expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(
         'ticket.pago_id_ref IS NOT NULL',
       );
     });
 
     it('debería filtrar por ninguna (todas las referencias IS NULL)', async () => {
-      await service.findAll(0, 10, undefined, undefined, undefined, undefined, undefined, 'ninguna');
+      await service.findAll(
+        0,
+        10,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        'ninguna',
+      );
       expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(
         'ticket.pedido_id_ref IS NULL',
       );
@@ -269,13 +333,15 @@ describe('TicketsService', () => {
     it('debería llamar al repositorio con el ID correcto', async () => {
       await service.findById('uuid-test-001');
       expect(mockTicketRepository.findOne).toHaveBeenCalledWith(
-        expect.objectContaining({ where: { id: 'uuid-test-001' } })
+        expect.objectContaining({ where: { id: 'uuid-test-001' } }),
       );
     });
 
     it('debería lanzar NotFoundException cuando el ticket no existe', async () => {
       mockTicketRepository.findOne.mockResolvedValueOnce(null);
-      await expect(service.findById('uuid-inexistente')).rejects.toThrow(NotFoundException);
+      await expect(service.findById('uuid-inexistente')).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 
@@ -305,7 +371,7 @@ describe('TicketsService', () => {
     it('debería asignar estado "abierto" por defecto', async () => {
       await service.create(createDto);
       expect(mockTicketRepository.create).toHaveBeenCalledWith(
-        expect.objectContaining({ estado: 'abierto' })
+        expect.objectContaining({ estado: 'abierto' }),
       );
     });
 
@@ -314,21 +380,21 @@ describe('TicketsService', () => {
       expect(mockTicketRepository.create).toHaveBeenCalledWith(
         expect.objectContaining({
           fecha_vencimiento_sla: expect.any(Date),
-        })
+        }),
       );
     });
 
     it('debería pasar canal correcto al create', async () => {
       await service.create({ ...createDto, canal: 'chat' as any });
       expect(mockTicketRepository.create).toHaveBeenCalledWith(
-        expect.objectContaining({ canal: 'chat' })
+        expect.objectContaining({ canal: 'chat' }),
       );
     });
 
     it('debería pasar prioridad correcta al create', async () => {
       await service.create({ ...createDto, prioridad: 'critica' as any });
       expect(mockTicketRepository.create).toHaveBeenCalledWith(
-        expect.objectContaining({ prioridad: 'critica' })
+        expect.objectContaining({ prioridad: 'critica' }),
       );
     });
   });
@@ -394,7 +460,9 @@ describe('TicketsService', () => {
     });
 
     it('debería reutilizar cliente existente encontrado por email', async () => {
-      mockClientesService.findByEmailOrTelefono.mockResolvedValueOnce({ id: 42 } as any);
+      mockClientesService.findByEmailOrTelefono.mockResolvedValueOnce({
+        id: 42,
+      } as any);
       await service.createExterno({
         ...baseDto,
         cliente_email: 'juan@example.com',
@@ -464,7 +532,9 @@ describe('TicketsService', () => {
       mockTicketRepository.findOne.mockResolvedValueOnce(mockTicket);
       mockTicketRepository.save.mockResolvedValueOnce(ticketActualizado);
 
-      const result = await service.update('uuid-test-001', { estado: 'progreso' as any });
+      const result = await service.update('uuid-test-001', {
+        estado: 'progreso' as any,
+      });
       expect(result.estado).toBe('progreso');
     });
 
@@ -474,7 +544,9 @@ describe('TicketsService', () => {
       mockTicketRepository.findOne.mockResolvedValueOnce(mockTicket);
       mockTicketRepository.save.mockResolvedValueOnce(ticketActualizado);
 
-      const result = await service.update('uuid-test-001', { agente_id: agenteId });
+      const result = await service.update('uuid-test-001', {
+        agente_id: agenteId,
+      });
       expect(result.agente_id).toBe(agenteId);
     });
 
@@ -486,7 +558,7 @@ describe('TicketsService', () => {
     it('debería lanzar error si el ticket no existe', async () => {
       mockTicketRepository.findOne.mockResolvedValueOnce(null);
       await expect(
-        service.update('uuid-inexistente', { estado: 'resuelto' as any })
+        service.update('uuid-inexistente', { estado: 'resuelto' as any }),
       ).rejects.toThrow(NotFoundException);
     });
   });
@@ -507,7 +579,9 @@ describe('TicketsService', () => {
 
     it('debería lanzar error si el ticket no existe', async () => {
       mockTicketRepository.delete.mockResolvedValueOnce({ affected: 0 });
-      await expect(service.delete('uuid-inexistente')).rejects.toThrow(NotFoundException);
+      await expect(service.delete('uuid-inexistente')).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 
@@ -530,7 +604,7 @@ describe('TicketsService', () => {
     it('debería llamar al repositorio con el cliente_id correcto', async () => {
       await service.findByClientId(1);
       expect(mockTicketRepository.find).toHaveBeenCalledWith(
-        expect.objectContaining({ where: { cliente_id: 1 } })
+        expect.objectContaining({ where: { cliente_id: 1 } }),
       );
     });
   });
@@ -550,7 +624,7 @@ describe('TicketsService', () => {
     it('debería llamar find del repositorio con estado abierto', async () => {
       await service.getTicketsBySlaStatus();
       expect(mockTicketRepository.find).toHaveBeenCalledWith(
-        expect.objectContaining({ where: { estado: 'abierto' } })
+        expect.objectContaining({ where: { estado: 'abierto' } }),
       );
     });
 
@@ -575,7 +649,11 @@ describe('TicketsService', () => {
       const vencimiento = new Date(ahora.getTime() + 10 * 60 * 60 * 1000);
 
       mockTicketRepository.find.mockResolvedValueOnce([
-        { ...mockTicket, creado_en: creado, fecha_vencimiento_sla: vencimiento },
+        {
+          ...mockTicket,
+          creado_en: creado,
+          fecha_vencimiento_sla: vencimiento,
+        },
       ]);
 
       const result = await service.getTicketsBySlaStatus();

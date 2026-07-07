@@ -57,8 +57,13 @@ describe('ClientesService', () => {
     service = module.get<ClientesService>(ClientesService);
     jest.clearAllMocks();
 
-    mockClientesRepository.create.mockImplementation((data) => ({ ...baseCliente, ...data }));
-    mockClientesRepository.save.mockImplementation((data) => Promise.resolve({ ...baseCliente, ...data }));
+    mockClientesRepository.create.mockImplementation((data) => ({
+      ...baseCliente,
+      ...data,
+    }));
+    mockClientesRepository.save.mockImplementation((data) =>
+      Promise.resolve({ ...baseCliente, ...data }),
+    );
     mockClientesRepository.find.mockResolvedValue([{ ...baseCliente }]);
     mockClientesRepository.findOne.mockResolvedValue({ ...baseCliente });
     mockClientesRepository.createQueryBuilder.mockReturnValue(mockQueryBuilder);
@@ -154,7 +159,12 @@ describe('ClientesService', () => {
       // email (+80) + telefono (+25) + documento (+20) + nombre (+10) = 135 → cap 100
       expect(result.similarity_score).toBe(100);
       expect(result.matched_fields).toEqual(
-        expect.arrayContaining(['email', 'telefono', 'documento_identidad', 'nombre_completo']),
+        expect.arrayContaining([
+          'email',
+          'telefono',
+          'documento_identidad',
+          'nombre_completo',
+        ]),
       );
     });
 
