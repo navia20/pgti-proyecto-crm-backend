@@ -8,16 +8,37 @@ import {
   Body,
   Query,
   ParseIntPipe,
+  Headers,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { ClientesService } from './clientes.service';
 import { CreateClienteDto } from './dtos/create-cliente.dto';
 import { UpdateClienteDto } from './dtos/update-cliente.dto';
 import { CompareClientesDto } from './dtos/compare-clientes.dto';
 import { MergeClientesDto } from './dtos/merge-clientes.dto';
+import { Public } from '../auth/decorators/public.decorator';
 
 @Controller('api/v1/clientes')
 export class ClientesController {
-  constructor(private readonly clientesService: ClientesService) {}
+  constructor(
+    private readonly clientesService: ClientesService,
+    private readonly configService: ConfigService,
+  ) {}
+
+  private getApiKey(): string {
+    return this.configService.get<string>('IDENTIDAD_API_KEY') || '';
+  }
+
+  @Public()
+  @Get('externo')
+  async findAllExterno(@Headers('x-api-key') apiKey: string) {
+    const expectedKey = this.getApiKey();
+    if (!expectedKey || apiKey !== expectedKey) {
+      return { ok: false, message: 'API key inválida' };
+    }
+    const clientes = await this.clientesService.findAll();
+    return { ok: true, clientes };
+  }
 
   @Post()
   async create(@Body() createClienteDto: CreateClienteDto) {
