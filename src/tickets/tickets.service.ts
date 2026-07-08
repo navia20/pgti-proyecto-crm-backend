@@ -375,7 +375,9 @@ export class TicketsService {
     return tickets.map((t) =>
       this.mapToDto(
         t,
-        t.cliente_id ? clienteNames.get(t.cliente_id) : undefined,
+        t.cliente_id
+          ? (clienteNames.get(t.cliente_id) ?? undefined)
+          : undefined,
       ),
     );
   }
