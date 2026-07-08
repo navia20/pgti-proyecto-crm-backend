@@ -15,6 +15,7 @@ import { TicketsService } from './tickets.service';
 import { CreateTicketDto } from './dtos/create-ticket.dto';
 import { CreateTicketExternoDto } from './dtos/create-ticket-externo.dto';
 import { UpdateTicketDto } from './dtos/update-ticket.dto';
+import { Public } from '../auth/decorators/public.decorator';
 
 @Controller('api/v1/tickets')
 export class TicketsController {
@@ -34,6 +35,7 @@ export class TicketsController {
     return this.ticketsService.create(createTicketDto);
   }
 
+  @Public()
   @Post('externo')
   @HttpCode(201)
   async createExterno(
@@ -87,6 +89,7 @@ export class TicketsController {
     return this.ticketsService.getTicketsBySlaStatus();
   }
 
+  @Public()
   @Get('externo/:id')
   async findExterno(@Param('id') id: string, @Query('api_key') apiKey: string) {
     if (!apiKey) {
@@ -132,6 +135,13 @@ export class TicketsController {
 
   @Get(':id')
   async findById(@Param('id') id: string) {
+    if (
+      !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+        id,
+      )
+    ) {
+      return { ok: false, message: 'ID inválido' };
+    }
     return this.ticketsService.findById(id);
   }
 
@@ -140,11 +150,25 @@ export class TicketsController {
     @Param('id') id: string,
     @Body() updateTicketDto: UpdateTicketDto,
   ) {
+    if (
+      !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+        id,
+      )
+    ) {
+      return { ok: false, message: 'ID inválido' };
+    }
     return this.ticketsService.update(id, updateTicketDto);
   }
 
   @Delete(':id')
   async delete(@Param('id') id: string) {
+    if (
+      !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+        id,
+      )
+    ) {
+      return { ok: false, message: 'ID inválido' };
+    }
     return this.ticketsService.delete(id);
   }
 }

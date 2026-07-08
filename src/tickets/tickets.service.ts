@@ -3,6 +3,8 @@ import {
   BadRequestException,
   Logger,
   NotFoundException,
+  Inject,
+  forwardRef,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -14,7 +16,7 @@ import {
 } from './dtos/create-ticket-externo.dto';
 import { UpdateTicketDto } from './dtos/update-ticket.dto';
 import { TicketDto } from './dtos/ticket.dto';
-// import { AnalyticsService } from '../analytics/analytics.service';
+import { AnalyticsService } from '../analytics/analytics.service';
 import { IncidentesService } from '../incidentes/incidentes.service';
 import { ClientesService } from '../clientes/clientes.service';
 import { InteraccionesService } from '../interacciones/interacciones.service';
@@ -28,7 +30,8 @@ export class TicketsService {
   constructor(
     @InjectRepository(TicketEntity)
     private ticketRepository: Repository<TicketEntity>,
-    // private readonly analyticsService: AnalyticsService,
+    @Inject(forwardRef(() => AnalyticsService))
+    private readonly analyticsService: AnalyticsService,
     private readonly incidentesService: IncidentesService,
     private readonly clientesService: ClientesService,
     private readonly interaccionesService: InteraccionesService,
@@ -62,6 +65,24 @@ export class TicketsService {
     });
 
     const savedTicket = await this.ticketRepository.save(ticket);
+
+    this.analyticsService
+      .emit('ticket.creado', {
+        ticket_id: savedTicket.id,
+        asunto: savedTicket.asunto,
+        estado: savedTicket.estado,
+        prioridad: savedTicket.prioridad,
+        canal: savedTicket.canal,
+        source_project: 'crm',
+        cliente_identidad_id: null,
+        email: null,
+        telefono: null,
+        agente_id: savedTicket.agente_id,
+        pedido_id_ref: savedTicket.pedido_id_ref,
+        suscripcion_id_red: savedTicket.suscripcion_id_ref,
+        fecha_vencimiento_sla: savedTicket.fecha_vencimiento_sla.toISOString(),
+      })
+      .catch(() => {});
 
     if (savedTicket.cliente_id) {
       this.enviarNotificacionCreacion(savedTicket).catch(() => {});
@@ -143,6 +164,24 @@ export class TicketsService {
     });
 
     const savedTicket = await this.ticketRepository.save(ticket);
+
+    this.analyticsService
+      .emit('ticket.creado', {
+        ticket_id: savedTicket.id,
+        asunto: savedTicket.asunto,
+        estado: savedTicket.estado,
+        prioridad: savedTicket.prioridad,
+        canal: savedTicket.canal,
+        source_project: dto.sistema_origen || 'externo',
+        cliente_identidad_id: null,
+        email: dto.cliente_email || null,
+        telefono: dto.cliente_telefono || null,
+        agente_id: savedTicket.agente_id,
+        pedido_id_ref: savedTicket.pedido_id_ref,
+        suscripcion_id_red: savedTicket.suscripcion_id_ref,
+        fecha_vencimiento_sla: savedTicket.fecha_vencimiento_sla.toISOString(),
+      })
+      .catch(() => {});
 
     if (savedTicket.cliente_id) {
       this.enviarNotificacionCreacion(savedTicket).catch(() => {});
@@ -317,7 +356,7 @@ export class TicketsService {
 
     const clienteNames = ticket.cliente_id
       ? await this.getClientNames([ticket])
-      : new Map();
+      : new Map<number, string>();
 
     return this.mapToDto(
       ticket,
@@ -446,7 +485,7 @@ export class TicketsService {
 
     const clienteNames = ticket.cliente_id
       ? await this.getClientNames([ticket])
-      : new Map();
+      : new Map<number, string>();
 
     return this.mapToDto(
       ticket,
