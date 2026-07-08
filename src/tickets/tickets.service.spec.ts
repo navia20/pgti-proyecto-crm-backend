@@ -7,6 +7,7 @@ import { ClientesService } from '../clientes/clientes.service';
 import { InteraccionesService } from '../interacciones/interacciones.service';
 import { IncidentesService } from '../incidentes/incidentes.service';
 import { NotificacionesService } from '../notificaciones/notificaciones.service';
+import { AnalyticsService } from '../analytics/analytics.service';
 
 const mockTicket: Partial<TicketEntity> = {
   id: 'uuid-test-001',
@@ -64,9 +65,6 @@ const mockInteraccionesService = {
   create: jest.fn().mockResolvedValue({}),
 };
 
-// Servicios nuevos que trajo el merge. Firmas del código real:
-// IncidentesService.enviarAlerta -> Promise<void>
-// NotificacionesService.notificar* -> Promise<boolean>
 const mockIncidentesService = {
   enviarAlerta: jest.fn().mockResolvedValue(undefined),
 };
@@ -79,6 +77,11 @@ const mockNotificacionesService = {
   notificarAsignacionAgente: jest.fn().mockResolvedValue(true),
   notificarSlaWarning: jest.fn().mockResolvedValue(true),
   notificarInteraccionClienteCritico: jest.fn().mockResolvedValue(true),
+};
+
+// Servicio nuevo del último merge. El servicio llama analyticsService.emit(...) con .catch().
+const mockAnalyticsService = {
+  emit: jest.fn().mockResolvedValue(undefined),
 };
 
 describe('TicketsService', () => {
@@ -107,6 +110,10 @@ describe('TicketsService', () => {
         {
           provide: NotificacionesService,
           useValue: mockNotificacionesService,
+        },
+        {
+          provide: AnalyticsService,
+          useValue: mockAnalyticsService,
         },
       ],
     }).compile();
@@ -156,6 +163,7 @@ describe('TicketsService', () => {
     mockNotificacionesService.notificarInteraccionClienteCritico.mockResolvedValue(
       true,
     );
+    mockAnalyticsService.emit.mockResolvedValue(undefined);
   });
 
   it('debería estar definido', () => {
