@@ -51,7 +51,7 @@ x-api-key: pagos_secret_p04
 | `cliente_nombre` | `string` | Sí | Nombre completo del cliente. |
 | `cliente_email` | `string` | Sí | Email del cliente. Se usa para buscar o crear. |
 | `cliente_telefono` | `string` | No | Teléfono del cliente. |
-| `pago_id_ref` | `string` | No | ID del pago. Se usa como `autor_id` en la interacción. |
+| `pago_id_ref` | `string` | Sí | ID del pago. Se usa como `autor_id` en la interacción. |
 | `pedido_id_ref` | `string` | No | ID del pedido (si aplica). |
 | `suscripcion_id_ref` | `string` | No | ID de la suscripción (si aplica). |
 | `contexto` | `string` | No | Info adicional libre. |
