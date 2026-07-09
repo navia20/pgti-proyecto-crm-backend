@@ -1,10 +1,3 @@
-# Integración Incidentes → CRM: Consulta de Estado
-
-**Dominio:** Incidentes (P11)
-**Versión:** `v1.0`
-**Fecha:** 5 de julio de 2026
-
----
 
 ## Endpoint
 

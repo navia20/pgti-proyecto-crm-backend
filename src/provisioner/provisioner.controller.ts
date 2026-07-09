@@ -1,7 +1,7 @@
 import { Controller, Post, Body, HttpCode, HttpStatus } from '@nestjs/common';
 import { Public } from '../auth/decorators/public.decorator';
-import {
-  ProvisionerService,
+import { ProvisionerService } from './provisioner.service';
+import type {
   ProvisionUserPayload,
   ProvisionUserResponse,
 } from './provisioner.service';
