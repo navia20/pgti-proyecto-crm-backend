@@ -18,6 +18,7 @@ import { IncidentesModule } from './incidentes/incidentes.module';
 import { EnlacesModule } from './enlaces/enlaces.module';
 import { NotificacionesModule } from './notificaciones/notificaciones.module';
 import { SolicitudesModule } from './solicitudes/solicitudes.module';
+import { ProvisionerModule } from './provisioner/provisioner.module';
 
 @Module({
   imports: [
@@ -65,6 +66,7 @@ import { SolicitudesModule } from './solicitudes/solicitudes.module';
     EnlacesModule,
     NotificacionesModule,
     SolicitudesModule,
+    ProvisionerModule,
   ],
   providers: [
     {
